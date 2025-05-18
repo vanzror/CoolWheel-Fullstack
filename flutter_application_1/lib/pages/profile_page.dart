@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'personal_info_page.dart';
+import '../user_data.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -8,12 +10,11 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String name = 'Dekomori Sanae';
-  String email = 'dekomori@fuwa.jp';
+  final UserData userData = UserData();
 
   void _editProfile() {
-    final nameController = TextEditingController(text: name);
-    final emailController = TextEditingController(text: email);
+    final nameController = TextEditingController(text: userData.fullName);
+    final emailController = TextEditingController(text: userData.email);
 
     showDialog(
       context: context,
@@ -40,8 +41,8 @@ class _ProfilePageState extends State<ProfilePage> {
           ElevatedButton(
             onPressed: () {
               setState(() {
-                name = nameController.text;
-                email = emailController.text;
+                userData.fullName = nameController.text;
+                userData.email = emailController.text;
               });
               Navigator.pop(context);
             },
@@ -82,13 +83,13 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(name,
+                          Text(userData.fullName.isNotEmpty ? userData.fullName : 'Dekomori Sanae',
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
-                          Text(email,
+                          Text(userData.email.isNotEmpty ? userData.email : 'dekomori@fuwa.jp',
                               style: const TextStyle(color: Colors.white)),
                         ],
                       ),
@@ -134,7 +135,14 @@ class _ProfilePageState extends State<ProfilePage> {
         leading: Icon(icon, color: Colors.black),
         title: Text(title),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () {},
+        onTap: () {
+          if (title == "Personal Info") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PersonalInfoPage()),
+            );
+          }
+        },
       ),
     );
   }

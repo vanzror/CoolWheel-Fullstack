@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
+import 'home_page.dart';
 
 class TrackerPage extends StatefulWidget {
-  const TrackerPage({Key? key}) : super(key: key);
+  final VoidCallback? onBackToHome;
+
+  const TrackerPage({Key? key, this.onBackToHome}) : super(key: key);
 
   @override
   State<TrackerPage> createState() => _TrackerPageState();
@@ -63,7 +66,13 @@ class _TrackerPageState extends State<TrackerPage> {
                           children: [
                             IconButton(
                               icon: const Icon(Icons.arrow_back_ios),
-                              onPressed: () => Navigator.pop(context),
+                              onPressed: () {
+                                if (widget.onBackToHome != null) {
+                                  widget.onBackToHome!();
+                                } else {
+                                  Navigator.pop(context);
+                                }
+                              },
                             ),
                             const Spacer(),
                             const Text(

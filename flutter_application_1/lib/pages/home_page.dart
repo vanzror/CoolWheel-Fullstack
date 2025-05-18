@@ -19,18 +19,7 @@ class _HomePageState extends State<HomePage> {
     'August', 'September', 'October', 'November', 'December'
   ];
 
-  void _onItemTapped(int index) {
-    if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const TrackerPage()),
-      );
-    } else {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
-  }
+// Removed _onItemTapped method to avoid Navigator.push to TrackerPage
 
   String getGreeting() {
     final hour = DateTime.now().hour;
