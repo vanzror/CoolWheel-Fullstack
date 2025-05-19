@@ -1,0 +1,14 @@
+{
+    "name": "bike-tracker-backend",
+    "version": "1.0.0",
+    "main": "app.js",
+    "scripts": {
+        "start": "node app.js"
+    },
+    "dependencies": {
+        "bcryptjs": "^3.0.2",
+        "dotenv": "^10.0.0",
+        "express": "^4.21.2",
+        "pg": "^8.7.1"
+    }
+}
