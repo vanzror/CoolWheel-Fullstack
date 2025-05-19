@@ -25,8 +25,8 @@ class _SignInPageState extends State<SignInPage> {
     if (_formKey.currentState!.validate()) {
       // Perform sign in logic here
       print('Sign In successful');
-      // Navigate to profile setup page
-      Navigator.pushReplacementNamed(context, '/profile_setup');
+      // Navigate to home page instead of profile setup page
+      Navigator.pushReplacementNamed(context, '/main');
     }
   }
 

@@ -53,6 +53,11 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  void _signOut() {
+    // Clear user data or perform sign out logic here if needed
+    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -116,7 +121,21 @@ class _ProfilePageState extends State<ProfilePage> {
               const Text("Sign Out",
                   style: TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
-              buildSettingTile(Icons.logout, "Sign Out"),
+              GestureDetector(
+                onTap: _signOut,
+                child: Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    leading: const Icon(Icons.logout, color: Colors.black),
+                    title: const Text("Sign Out"),
+                    trailing: const Icon(Icons.chevron_right),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

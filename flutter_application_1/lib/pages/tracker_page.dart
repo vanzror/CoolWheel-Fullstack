@@ -1,7 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'home_page.dart';
 
 class TrackerPage extends StatefulWidget {
   final VoidCallback? onBackToHome;
@@ -16,6 +17,10 @@ class _TrackerPageState extends State<TrackerPage> {
   late GoogleMapController _mapController;
   LocationData? _currentLocation;
   final Location _location = Location();
+
+  Timer? _timer;
+  int _elapsedSeconds = 0;
+  bool _isRunning = false;
 
   @override
   void initState() {
@@ -34,6 +39,38 @@ class _TrackerPageState extends State<TrackerPage> {
       // Handle permission denial
       print("Location permission denied.");
     }
+  }
+
+  void _startTimer() {
+    if (_isRunning) return;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      setState(() {
+        _elapsedSeconds++;
+      });
+    });
+    setState(() {
+      _isRunning = true;
+    });
+  }
+
+  void _stopTimer() {
+    if (!_isRunning) return;
+    _timer?.cancel();
+    setState(() {
+      _isRunning = false;
+    });
+  }
+
+  String _formatElapsedTime() {
+    final minutes = (_elapsedSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (_elapsedSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -59,8 +96,9 @@ class _TrackerPageState extends State<TrackerPage> {
                 ),
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Row(
                           children: [
@@ -74,40 +112,70 @@ class _TrackerPageState extends State<TrackerPage> {
                                 }
                               },
                             ),
-                            const Spacer(),
-                            const Text(
-                              'Start Tracking',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                            const Expanded(
+                              child: Center(
+                                child: Text(
+                                  'Start Tracking',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
                               ),
                             ),
-                            const Spacer(),
-                            const SizedBox(width: 40), // Space for symmetry
+                            const SizedBox(width: 48), // To balance the back button width
                           ],
                         ),
                         const SizedBox(height: 10),
-                        const Text(
-                          '45:25',
-                          style: TextStyle(
-                            fontSize: 28,
+                        Text(
+                          _formatElapsedTime(),
+                          style: const TextStyle(
+                            fontSize: 32,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Spacer(),
-                        Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: const [
-                              _TrackerItem(icon: Icons.directions_bike, value: '1.25', unit: 'km'),
-                              _TrackerItem(icon: Icons.local_fire_department, value: '548', unit: 'kkal'),
-                              _TrackerItem(icon: Icons.favorite, value: '78', unit: 'bpm'),
-                            ],
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                _TrackerStat(icon: Icons.directions_bike, value: '1.25', unit: 'km'),
+                                SizedBox(height: 16),
+                                _TrackerStat(icon: Icons.local_fire_department, value: '27', unit: 'kkal'),
+                                SizedBox(height: 16),
+                                _TrackerStat(icon: Icons.favorite, value: '78', unit: 'bpm'),
+                              ],
+                            ),
+                            const SizedBox(width: 32),
+                            Expanded(
+                              child: Container(),
+                            ),
+                          ],
+                        ),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 24),
+                            child: ElevatedButton(
+                              onPressed: _isRunning ? _stopTimer : _startTimer,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1E2641),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                fixedSize: const Size(72, 72),
+                                padding: EdgeInsets.zero,
+                              ),
+                              child: Center(
+                                child: Icon(
+                                  _isRunning ? Icons.pause : Icons.play_arrow,
+                                  size: 36,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -120,12 +188,12 @@ class _TrackerPageState extends State<TrackerPage> {
   }
 }
 
-class _TrackerItem extends StatelessWidget {
+class _TrackerStat extends StatelessWidget {
   final IconData icon;
   final String value;
   final String unit;
 
-  const _TrackerItem({
+  const _TrackerStat({
     required this.icon,
     required this.value,
     required this.unit,
