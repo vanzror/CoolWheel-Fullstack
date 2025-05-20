@@ -45,13 +45,12 @@ exports.getGpsDataByUser = async (req, res) => {
 };
 
 const { calculateORSMDistance } = require('../utils/calculateDistance');
-
+const { calculateAndUpdatePace } = require('../utils/calculatePace');
 
 exports.getDistanceByUser = async (req, res) => {
   const user_id = req.user.user_id;
 
   try {
-    // 1. Ambil ride_id aktif
     const rideResult = await pool.query(
       `SELECT id FROM rides WHERE user_id = $1 AND ended_at IS NULL ORDER BY started_at DESC LIMIT 1`,
       [user_id]
@@ -63,12 +62,8 @@ exports.getDistanceByUser = async (req, res) => {
 
     const ride_id = rideResult.rows[0].id;
 
-    // 2. Ambil dua titik GPS terakhir
     const result = await pool.query(
-      `SELECT latitude AS lat, longitude AS lon FROM gps_points
-       WHERE ride_id = $1
-       ORDER BY recorded_at DESC
-       LIMIT 2`,
+      `SELECT latitude AS lat, longitude AS lon FROM gps_points WHERE ride_id = $1 ORDER BY recorded_at ASC`,
       [ride_id]
     );
 
@@ -78,33 +73,21 @@ exports.getDistanceByUser = async (req, res) => {
       return res.status(400).json({ error: 'Minimal dua titik GPS dibutuhkan untuk menghitung jarak' });
     }
 
-    const [latest, previous] = gpsPoints;
+    const distanceKm = await calculateORSMDistance(gpsPoints);
 
-    // 3. Hitung jarak antar dua titik terakhir
-    const addedDistance = await calculateORSMDistance([previous, latest]);
-
-    // 4. Ambil total jarak sebelumnya dari realtime_stats
-    const statsResult = await pool.query(
-      `SELECT distance FROM realtime_stats WHERE ride_id = $1`,
-      [ride_id]
-    );
-
-    const currentDistance = statsResult.rows.length > 0 ? statsResult.rows[0].distance : 0;
-    const newTotalDistance = currentDistance + addedDistance;
-
-    // 5. Simpan update total jarak
+    // Simpan atau update distance ke realtime_stats
     await pool.query(
-      `
-      INSERT INTO realtime_stats (ride_id, distance, updated_at)
-      VALUES ($1, $2, NOW())
-      ON CONFLICT (ride_id)
-      DO UPDATE SET distance = $2, updated_at = NOW()
-      `,
-      [ride_id, newTotalDistance]
+      `INSERT INTO realtime_stats (ride_id, distance, updated_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (ride_id)
+       DO UPDATE SET distance = EXCLUDED.distance, updated_at = NOW()`,
+      [ride_id, distanceKm]
     );
 
-    // 6. Kirim response
-    res.json({ ride_id, distance_km: newTotalDistance });
+    // 🔥 Tambahkan ini agar pace juga ikut terupdate
+    await calculateAndUpdatePace(ride_id);
+
+    res.json({ ride_id, distance_km: distanceKm });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

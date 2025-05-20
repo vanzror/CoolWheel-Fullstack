@@ -20,25 +20,35 @@ exports.startRide = async (req, res) => {
 
 exports.endRide = async (req, res) => {
   const user_id = req.user.user_id;
-  const rideId = req.params.rideId;
-
+  
   try {
+    // Cari ride aktif milik user
+    const rideResult = await pool.query(
+      `SELECT id FROM rides WHERE user_id = $1 AND ended_at IS NULL ORDER BY started_at DESC LIMIT 1`,
+      [user_id]
+    );
+
+    if (rideResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Tidak ada ride aktif yang bisa diakhiri' });
+    }
+
+    const rideId = rideResult.rows[0].id;
+
+    // Update ride tersebut
     const updateResult = await pool.query(
       `UPDATE rides 
        SET ended_at = NOW(), is_active = false 
-       WHERE id = $1 AND user_id = $2`,
-      [rideId, user_id]
+       WHERE id = $1`,
+      [rideId]
     );
 
-    if (updateResult.rowCount === 0) {
-      return res.status(404).json({ error: 'Ride tidak ditemukan atau bukan milik user' });
-    }
-
-    res.status(200).json({ message: 'Ride selesai' });
+    res.status(200).json({ message: 'Ride berhasil diakhiri', ride_id: rideId });
   } catch (err) {
+    console.error('Gagal mengakhiri ride:', err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 exports.getLiveDuration = async (req, res) => {
   const user_id = req.user.user_id;
