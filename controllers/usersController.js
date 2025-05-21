@@ -27,19 +27,30 @@ exports.registerUser = async (req, res) => {
   };
   
 
-exports.loginUser = async (req, res) => {
+exports.login = async (req, res) => {
   const { email, password } = req.body;
 
+  const userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+  const user = userResult.rows[0];
+  if (!user) return res.status(401).json({ error: 'Email tidak ditemukan' });
+
+  const validPassword = await bcrypt.compare(password, user.password);
+  if (!validPassword) return res.status(401).json({ error: 'Password salah' });
+
+  const token = jwt.sign({ user_id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+  // Simpan token baru, ganti token lama
+  await pool.query('UPDATE users SET token = $1 WHERE id = $2', [token, user.id]);
+
+  res.json({ token });
+};
+
+exports.logout = async (req, res) => {
+  const user_id = req.user.user_id;
+
   try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    const user = result.rows[0];
-    if (!user) return res.status(401).json({ error: 'Email tidak ditemukan' });
-
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ error: 'Password salah' });
-
-    const token = jwt.sign({ user_id: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' } );
-    res.json({ token });
+    await pool.query('UPDATE users SET token = NULL WHERE id = $1', [user_id]);
+    res.json({ message: 'Logout berhasil' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
