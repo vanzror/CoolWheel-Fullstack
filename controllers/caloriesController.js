@@ -54,7 +54,7 @@ exports.calculateAndStoreCalories = async (req, res) => {
       [calories, ride_id]
     );
 
-    res.json({ ride_id, calories });
+    res.json({ ride_id, calories, pace });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
