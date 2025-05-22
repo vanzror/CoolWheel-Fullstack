@@ -66,7 +66,7 @@ exports.getUser = async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT id, username, email, height, weight, sos_number, nama_sos, age 
+      `SELECT id, username, email, height, weight, sos_number, nama_sos, age, phone_number 
        FROM users WHERE id = $1`,
       [user_id]
     );
@@ -83,7 +83,7 @@ exports.getUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   const user_id = req.user.user_id;
-  const { username, height, weight, sos_number, nama_sos, age } = req.body;
+  const { username, height, weight, sos_number, nama_sos, age, phone_number } = req.body;
 
   // Validasi input minimal (bisa dikembangkan lagi sesuai kebutuhan)
   if (!username && !height && !weight && !sos_number && !nama_sos && !age) {
@@ -106,15 +106,16 @@ exports.updateUser = async (req, res) => {
       weight: weight || user.weight,
       sos_number: sos_number || user.sos_number,
       nama_sos: nama_sos || user.nama_sos,
-      age: age || user.age
+      age: age || user.age,
+      phone_number: phone_number || user.phone_number,
     };
 
     const result = await pool.query(
       `UPDATE users 
-       SET username = $1, height = $2, weight = $3, sos_number = $4, nama_sos = $5, age = $6 
-       WHERE id = $7 
-       RETURNING id, username, email, height, weight, sos_number, nama_sos, age`,
-      [updated.username, updated.height, updated.weight, updated.sos_number, updated.nama_sos, updated.age, user_id]
+       SET username = $1, height = $2, weight = $3, sos_number = $4, nama_sos = $5, age = $6, phone_number = $7 
+       WHERE id = $8 
+       RETURNING id, username, email, height, weight, sos_number, nama_sos, age, phone_number`,
+      [updated.username, updated.height, updated.weight, updated.sos_number, updated.nama_sos, updated.age, updated.phone_number, user_id]
     );
 
     res.json({ message: 'User berhasil diperbarui', user: result.rows[0] });
