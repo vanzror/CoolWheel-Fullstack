@@ -8,8 +8,8 @@ const {
 } = require('../controllers/gpsController');
 
 // ✅ Middleware diletakkan sebagai parameter sebelum handler-nya
-router.post('/gps', authenticateToken, saveGpsData);
-router.get('/gps', authenticateToken, getGpsDataByUser);
-router.get('/gps/distance', authenticateToken, getDistanceByUser);
+router.post('/', authenticateToken, saveGpsData);
+router.get('/', authenticateToken, getGpsDataByUser);
+router.get('/distance', authenticateToken, getDistanceByUser);
 
 module.exports = router;
