@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import '../user_data.dart';
 
 class ProfileSetupPage extends StatefulWidget {
-  const ProfileSetupPage({Key? key}) : super(key: key);
+  const ProfileSetupPage({super.key});
 
   @override
   State<ProfileSetupPage> createState() => _ProfileSetupPageState();
@@ -17,6 +19,7 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _dobController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _emergencyContactNameController = TextEditingController();
@@ -44,20 +47,47 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
     }
   }
 
-  void _continue() {
+  void _continue() async {
     if (_formKey.currentState!.validate()) {
       // Save data to UserData singleton
       final userData = UserData();
       userData.fullName = _fullNameController.text;
       userData.phone = _phoneController.text;
       userData.dob = _dobController.text;
+      userData.age = _ageController.text;
       userData.weight = _weightController.text;
       userData.height = _heightController.text;
       userData.emergencyContactName = _emergencyContactNameController.text;
       userData.emergencyContactPhone = _emergencyContactPhoneController.text;
+      final prefs = await SharedPreferences.getInstance();
+      final getToken = prefs.getString('token');
 
+      final apiService = ApiService();
+      final response = await apiService.updateUser(
+        userData.fullName,
+        int.parse(userData.weight),
+        int.parse(userData.height),
+        userData.emergencyContactPhone,
+        userData.emergencyContactName,
+        int.parse(userData.age),
+        userData.phone,
+        getToken.toString()
+      );
+
+      debugPrint(
+        'Response from API: ${response.statusCode} ${response.body}',
+      );
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Data user updated successfully')),
+        );
+        Navigator.pushReplacementNamed(context, '/main');
       // Navigate to home page
-      Navigator.pushReplacementNamed(context, '/main');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update user data')),
+        );
+      }
     }
   }
 
@@ -83,7 +113,7 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
         title: const Text('Profile Setup'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/sign_up'),
         ),
       ),
       body: SafeArea(
@@ -133,21 +163,22 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                 const SizedBox(height: 16),
                 _buildTextField(_phoneController, 'Nomor Telepon', Icons.phone_android, TextInputType.phone),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _dobController,
-                  decoration: const InputDecoration(
-                    labelText: 'Tanggal Lahir',
-                    prefixIcon: Icon(Icons.calendar_today),
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(12)),
-                    ),
-                  ),
-                  readOnly: true,
-                  onTap: () => _selectDate(context),
-                  validator: (value) => value == null || value.isEmpty ? 'Please select tanggal lahir' : null,
-                ),
+                // TextFormField(
+                //   controller: _dobController,
+                //   decoration: const InputDecoration(
+                //     labelText: 'Tanggal Lahir',
+                //     prefixIcon: Icon(Icons.calendar_today),
+                //     filled: true,
+                //     fillColor: Colors.white,
+                //     border: OutlineInputBorder(
+                //       borderRadius: BorderRadius.all(Radius.circular(12)),
+                //     ),
+                //   ),
+                //   readOnly: true,
+                //   onTap: () => _selectDate(context),
+                //   validator: (value) => value == null || value.isEmpty ? 'Please select tanggal lahir' : null,
+                // ),
+                _buildTextField(_ageController, 'Usia', Icons.cake, TextInputType.number),
                 const SizedBox(height: 16),
                 _buildTextField(_weightController, 'Berat Badan', Icons.monitor_weight, TextInputType.number),
                 const SizedBox(height: 16),

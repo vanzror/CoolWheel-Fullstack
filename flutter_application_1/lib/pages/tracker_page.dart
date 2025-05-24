@@ -7,7 +7,7 @@ import 'package:location/location.dart';
 class TrackerPage extends StatefulWidget {
   final VoidCallback? onBackToHome;
 
-  const TrackerPage({Key? key, this.onBackToHome}) : super(key: key);
+  const TrackerPage({super.key, this.onBackToHome});
 
   @override
   State<TrackerPage> createState() => _TrackerPageState();
@@ -138,9 +138,9 @@ class _TrackerPageState extends State<TrackerPage> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Column(
+                            const Column(
                               mainAxisSize: MainAxisSize.min,
-                              children: const [
+                              children: [
                                 _TrackerStat(icon: Icons.directions_bike, value: '1.25', unit: 'km'),
                                 SizedBox(height: 16),
                                 _TrackerStat(icon: Icons.local_fire_department, value: '27', unit: 'kkal'),

@@ -129,10 +129,10 @@ class _ProfilePageState extends State<ProfilePage> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: ListTile(
-                    leading: const Icon(Icons.logout, color: Colors.black),
-                    title: const Text("Sign Out"),
-                    trailing: const Icon(Icons.chevron_right),
+                  child: const ListTile(
+                    leading: Icon(Icons.logout, color: Colors.black),
+                    title: Text("Sign Out"),
+                    trailing: Icon(Icons.chevron_right),
                   ),
                 ),
               ),

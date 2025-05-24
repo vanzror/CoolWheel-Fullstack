@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/home_page.dart';
 import 'pages/tracker_page.dart';
 import 'pages/profile_page.dart';
@@ -8,7 +9,9 @@ import 'pages/sign_up_page.dart';
 import 'pages/sign_in_page.dart';
 import 'pages/profile_setup_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
   runApp(const MyApp());
 }
 

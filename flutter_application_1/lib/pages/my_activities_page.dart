@@ -149,10 +149,10 @@ class _ActivityTile extends StatelessWidget {
             child: const Icon(Icons.directions_bike, color: Colors.white),
           ),
           const SizedBox(width: 12),
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'Biking to Keputih',
                   style: TextStyle(fontWeight: FontWeight.bold),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/calendar_section.dart';
 import '../widgets/location_map.dart';
-import 'tracker_page.dart'; // Import halaman tracker
+// Import halaman tracker
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,7 +12,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String selectedMonth = 'April';
-  int _selectedIndex = 0;
+  final int _selectedIndex = 0;
 
   final List<String> months = [
     'January', 'February', 'March', 'April', 'May', 'June', 'July',

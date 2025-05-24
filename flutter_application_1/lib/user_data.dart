@@ -15,4 +15,5 @@ class UserData {
   String height = '';
   String emergencyContactName = '';
   String emergencyContactPhone = '';
+  String age = '';
 }

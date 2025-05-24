@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/services/api_service.dart';
 
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({Key? key}) : super(key: key);
+  const SignUpPage({super.key});
 
   @override
   State<SignUpPage> createState() => _SignUpPageState();
@@ -30,15 +31,29 @@ class _SignUpPageState extends State<SignUpPage> {
     });
   }
 
-  void _submit() {
+  void _submit() async {
     setState(() {
       _passwordsMatch = _passwordController.text == _passwordConfirmController.text;
     });
 
     if (_formKey.currentState!.validate() && _passwordsMatch) {
       // Perform sign up logic here
-      // Navigate to profile setup page
-      Navigator.pushReplacementNamed(context, '/profile_setup');
+      final apiService = ApiService();
+      final email = _emailController.text;
+      final password = _passwordController.text;
+      final response = await apiService.register(email, password);
+      if (response.statusCode == 201) {
+        // Navigate to profile setup page
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Account created successfully')),
+        );
+        Navigator.pushReplacementNamed(context, '/profile_setup');
+      } else {
+        // Display error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error signing up')),
+        );
+      }
     }
   }
 
@@ -207,9 +222,9 @@ class _SignUpPageState extends State<SignUpPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             Text('Sign Up', style: TextStyle(fontSize: 16)),
                             SizedBox(width: 8),
                             Icon(Icons.arrow_forward),

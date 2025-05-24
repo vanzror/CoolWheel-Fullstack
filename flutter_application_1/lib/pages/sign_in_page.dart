@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInPage extends StatefulWidget {
-  const SignInPage({Key? key}) : super(key: key);
+  const SignInPage({super.key});
 
   @override
   State<SignInPage> createState() => _SignInPageState();
@@ -21,12 +25,36 @@ class _SignInPageState extends State<SignInPage> {
     });
   }
 
-  void _submit() {
+  void _submit() async {
     if (_formKey.currentState!.validate()) {
-      // Perform sign in logic here
-      print('Sign In successful');
-      // Navigate to home page instead of profile setup page
-      Navigator.pushReplacementNamed(context, '/main');
+      final apiService = ApiService();
+      final email = _emailController.text;
+      final password = _passwordController.text;
+
+      try {
+        final response = await apiService.login(email, password);
+        if (response.statusCode == 200) {
+          // Login successful
+          final prefs = await SharedPreferences.getInstance();
+          final data = jsonDecode(response.body);
+          prefs.setString('token', data['token']);
+          debugPrint("Response ${data['token']}");
+          if (data['complete_profile'] == true) {
+            Navigator.pushReplacementNamed(context, '/main');
+          } else {
+            Navigator.pushReplacementNamed(context, '/profile_setup');
+          }
+        } else {
+          // Login failed
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Login failed: ${response.reasonPhrase}')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An error occurred: $e')),
+        );
+      }
     }
   }
 
@@ -160,9 +188,9 @@ class _SignInPageState extends State<SignInPage> {
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: const [
+                          children: [
                             Text('Sign In', style: TextStyle(fontSize: 16)),
                             SizedBox(width: 8),
                             Icon(Icons.arrow_forward),
@@ -193,7 +221,7 @@ class _SignInPageState extends State<SignInPage> {
                       Center(
                         child: GestureDetector(
                           onTap: () {
-                            Navigator.pop(context);
+                            Navigator.pushNamed(context, '/sign_up');
                           },
                           child: const Text.rich(
                             TextSpan(
