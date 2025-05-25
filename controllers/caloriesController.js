@@ -7,7 +7,7 @@ exports.calculateAndStoreCalories = async (req, res) => {
   try {
     // Ambil ride aktif
     const rideResult = await pool.query(
-      `SELECT id, EXTRACT(EPOCH FROM (NOW() - started_at)) / 60 AS duration_minutes
+      `SELECT id, EXTRACT(EPOCH FROM (NOW() - started_at)) / 360 AS duration_minutes
        FROM rides WHERE user_id = $1 AND ended_at IS NULL
        ORDER BY started_at DESC LIMIT 1`,
       [user_id]
