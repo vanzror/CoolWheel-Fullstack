@@ -1,6 +1,9 @@
 const pool = require('../db');
 const twilio = require('twilio');
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const client = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 
 exports.saveHeartrate = async (req, res) => {
   const user_id = req.user.user_id;
@@ -38,17 +41,19 @@ exports.saveHeartrate = async (req, res) => {
 
     // Ambil nomor darurat dan username
     const userResult = await pool.query(
-    `SELECT username, sos_number FROM users WHERE id = $1`,
-    [user_id]
+      `SELECT username, sos_number FROM users WHERE id = $1`,
+      [user_id]
     );
+
     const { username, sos_number } = userResult.rows[0];
 
     // Kirim WA jika bpm tinggi
     if (bpm > 160 && sos_number) {
       const message = `⚠️ Detak jantung pada ${username} tinggi (${bpm} bpm).`;
+
       await client.messages.create({
-        from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
-        to: `whatsapp:${sos_number}`,
+        from: 'whatsapp:+14155238886', // ini HARUS sesuai dari Twilio Sandbox
+        to: `whatsapp:${sos_number}`,   // pastikan sos_number = +628xxxxxxx
         body: message,
       });
     }
