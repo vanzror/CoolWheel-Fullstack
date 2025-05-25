@@ -6,11 +6,6 @@ exports.saveHeartrate = async (req, res) => {
   const user_id = req.user.user_id;
   const { bpm } = req.body;
 
-  console.log("=== DEBUG ===");
-  console.log("Token decoded user_id:", req.user?.user_id);
-  console.log("Query user:", userResult.rows);
-
-
   if (!bpm) {
     return res.status(400).json({ error: 'BPM tidak boleh kosong' });
   }
@@ -46,6 +41,8 @@ exports.saveHeartrate = async (req, res) => {
     `SELECT username, sos_number FROM users WHERE id = $1`,
     [user_id]
     );
+  
+    const { username, sos_number } = userResult.rows[0];
 
     // Kirim WA jika bpm tinggi
     if (bpm > 160 && sos_number) {
