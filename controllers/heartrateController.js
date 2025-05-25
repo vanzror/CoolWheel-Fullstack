@@ -43,9 +43,12 @@ exports.saveHeartrate = async (req, res) => {
 
     // Ambil nomor darurat dan username
     const userResult = await pool.query(
-      `SELECT username, sos_number FROM users WHERE id = $1`,
-      [user_id]
+    `SELECT username, sos_number FROM users WHERE id = $1`,
+    [user_id]
     );
+    if (userResult.rows.length === 0) {
+     return res.status(404).json({ error: 'User tidak ditemukan' });
+    }
     const { username, sos_number } = userResult.rows[0];
 
     // Kirim WA jika bpm tinggi
