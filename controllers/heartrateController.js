@@ -1,6 +1,9 @@
 const pool = require('../db');
 const twilio = require('twilio');
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const client = twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
 
 exports.saveHeartrate = async (req, res) => {
   const user_id = req.user.user_id;
@@ -36,18 +39,21 @@ exports.saveHeartrate = async (req, res) => {
       [bpm, ride_id]
     );
 
-    // Ambil nomor darurat dan username
+    // Ambil data user: username, sos_number, dan age
     const userResult = await pool.query(
-    `SELECT username, sos_number FROM users WHERE id = $1`,
-    [user_id]
+      `SELECT username, sos_number, age FROM users WHERE id = $1`,
+      [user_id]
     );
-    const { username, sos_number } = userResult.rows[0];
+    const { username, sos_number, age } = userResult.rows[0];
 
-    // Kirim WA jika bpm tinggi
-    if (bpm > 160 && sos_number) {
-      const message = `⚠️ Detak jantung pada ${username} tinggi (${bpm} bpm).`;
+    const maxBPM = 220 - age;
+
+    // Kirim WA jika bpm melebihi batas maksimal berdasarkan usia
+    if (bpm > maxBPM && sos_number) {
+      const message = `⚠️ Detak jantung pada ${username} tinggi (${bpm} bpm).;`;
+
       await client.messages.create({
-        from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
+        from: 'whatsapp:+14155238886', // dari Twilio Sandbox
         to: `whatsapp:${sos_number}`,
         body: message,
       });

@@ -9,7 +9,7 @@ async function calculateORSMDistance(gpsPoints) {
     .map((p) => `${p.lon},${p.lat}`)
     .join(';');
 
-  const url = `http://router.project-osrm.org/route/v1/driving/${coordinates}?overview=false&geometries=polyline`;
+  const url = `http://router.project-osrm.org/route/v1/bike/${coordinates}?overview=false&geometries=polyline`;
 
   try {
     const response = await axios.get(url);
