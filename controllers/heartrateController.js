@@ -1,6 +1,7 @@
 const pool = require('../db');
 const twilio = require('twilio');
-const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+// const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const sendWhatsappAlert = require('../utils/sendWhatsappAlert'); // Tambahkan ini di atas
 
 exports.saveHeartrate = async (req, res) => {
   const user_id = req.user.user_id;
@@ -46,11 +47,7 @@ exports.saveHeartrate = async (req, res) => {
     // Kirim WA jika bpm tinggi
     if (bpm > 160 && sos_number) {
       const message = `⚠️ Detak jantung pada ${username} tinggi (${bpm} bpm).`;
-      await client.messages.create({
-        from: `whatsapp:${process.env.TWILIO_WHATSAPP_NUMBER}`,
-        to: `whatsapp:${sos_number}`,
-        body: message,
-      });
+      await sendWhatsappAlert(sos_number, message); // Gunakan fungsi util
     }
 
     res.status(201).json(result.rows[0]);
