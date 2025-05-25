@@ -41,7 +41,6 @@ exports.saveHeartrate = async (req, res) => {
     `SELECT username, sos_number FROM users WHERE id = $1`,
     [user_id]
     );
-  
     const { username, sos_number } = userResult.rows[0];
 
     // Kirim WA jika bpm tinggi
