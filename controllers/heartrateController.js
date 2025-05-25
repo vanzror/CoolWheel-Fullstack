@@ -6,6 +6,11 @@ exports.saveHeartrate = async (req, res) => {
   const user_id = req.user.user_id;
   const { bpm } = req.body;
 
+  console.log("=== DEBUG ===");
+  console.log("Token decoded user_id:", req.user?.user_id);
+  console.log("Query user:", userResult.rows);
+
+
   if (!bpm) {
     return res.status(400).json({ error: 'BPM tidak boleh kosong' });
   }
