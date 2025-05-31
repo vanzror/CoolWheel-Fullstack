@@ -31,6 +31,15 @@ migrate_working_dir/
 .pub/
 /build/
 
+*.ninja
+*.o
+*.so
+.cxx/
+build/
+
+android/settings.gradle
+android/gradle/wrapper/gradle-wrapper.properties
+
 # Symbolication related
 app.*.symbols
 
@@ -41,3 +50,46 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Android build folder
+/android/.gradle/
+/android/.idea/
+/android/local.properties
+
+# iOS
+/ios/.generated/
+/ios/Pods/
+/ios/.symlinks/
+/ios/Flutter/App.framework
+/ios/Flutter/Flutter.framework
+/ios/Flutter/Generated.xcconfig
+
+# macOS
+/macos/Flutter/ephemeral/
+/macos/Pods/
+/macos/.symlinks/
+/macos/.generated/
+
+# Web build
+/web/generated/
+
+# Windows
+/windows/Flutter/ephemeral/
+/windows/.generated/
+/windows/.symlinks/
+
+# Linux
+/linux/Flutter/ephemeral/
+/linux/.generated/
+/linux/.symlinks/
+
+# Coverage and test outputs
+coverage/
+test_outputs/
+
+# Firebase (optional, jika pakai Firebase CLI)
+.firebase/
+
+# Google Services files (sensitive, jangan masukin ke repo!)
+google-services.json
+GoogleService-Info.plist

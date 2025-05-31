@@ -23,6 +23,29 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Health Tracker',
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primaryColor: const Color(0xFF007BFF),
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: const MaterialColor(
+            0xFF007BFF,
+            <int, Color>{
+              50: Color(0xFFE3F0FF),
+              100: Color(0xFFB8DAFF),
+              200: Color(0xFF8CC4FF),
+              300: Color(0xFF5FAEFF),
+              400: Color(0xFF399BFF),
+              500: Color(0xFF007BFF),
+              600: Color(0xFF006FE6),
+              700: Color(0xFF005FCC),
+              800: Color(0xFF004FB3),
+              900: Color(0xFF003380),
+            },
+          ),
+        ).copyWith(
+          primary: const Color(0xFF007BFF),
+          secondary: const Color(0xFF007BFF),
+        ),
+      ),
       initialRoute: '/',
       routes: {
         '/': (context) => const SplashPage(),
@@ -71,7 +94,10 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _pages[_selectedIndex],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,

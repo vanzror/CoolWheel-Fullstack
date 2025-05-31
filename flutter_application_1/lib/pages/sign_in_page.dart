@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../components/loading.dart';
+import '../user_data.dart';
 
 class SignInPage extends StatefulWidget {
   const SignInPage({super.key});
@@ -31,32 +33,69 @@ class _SignInPageState extends State<SignInPage> {
       final email = _emailController.text;
       final password = _passwordController.text;
 
+      
+      LoadingPopup.show(
+        context: context,
+        message: "Signing in...",
+        textColor: Colors.black,
+        loaderColor: Colors.blue,
+      );
+
       try {
         final response = await apiService.login(email, password);
+
+        
+        if (!mounted) return;
+        LoadingPopup.hide(context);
+
         if (response.statusCode == 200) {
-          // Login successful
           final prefs = await SharedPreferences.getInstance();
           final data = jsonDecode(response.body);
           prefs.setString('token', data['token']);
-          debugPrint("Response ${data['token']}");
+          debugPrint("Response \\${data['token']}");
+
+          // Fetch user profile
+          final profileResponse =
+              await apiService.getUserProfile(data['token']);
+          if (profileResponse.statusCode == 200) {
+            final user = jsonDecode(profileResponse.body);
+            final userData = UserData();
+            userData.fullName = user['username'] ?? '';
+            userData.email = user['email'] ?? '';
+            userData.phone = user['phoneNumber'] ?? '';
+            userData.dob = user['dob'] ?? '';
+            userData.weight = user['weight']?.toString() ?? '';
+            userData.height = user['height']?.toString() ?? '';
+            userData.emergencyContactName = user['namaSos'] ?? '';
+            userData.emergencyContactPhone = user['sosNumber'] ?? '';
+            userData.age = user['age']?.toString() ?? '';
+          }
+
           if (data['complete_profile'] == true) {
+            if (!mounted) return;
             Navigator.pushReplacementNamed(context, '/main');
           } else {
+            if (!mounted) return;
             Navigator.pushReplacementNamed(context, '/profile_setup');
           }
         } else {
-          // Login failed
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Login failed: ${response.reasonPhrase}')),
           );
         }
       } catch (e) {
+        if (!mounted) return;
+        LoadingPopup.hide(context);
+
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('An error occurred: $e')),
         );
       }
     }
   }
+
 
   Widget _socialButton(IconData icon) {
     return Container(
@@ -69,7 +108,7 @@ class _SignInPageState extends State<SignInPage> {
       child: IconButton(
         icon: Icon(icon, color: Colors.grey.shade700),
         onPressed: () {
-          // Social login logic here
+          
         },
       ),
     );
@@ -135,6 +174,7 @@ class _SignInPageState extends State<SignInPage> {
                           filled: true,
                           fillColor: Colors.white,
                           prefixIcon: const Icon(Icons.email_outlined),
+                          hintText: 'Enter your email',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -164,8 +204,11 @@ class _SignInPageState extends State<SignInPage> {
                           filled: true,
                           fillColor: Colors.white,
                           prefixIcon: const Icon(Icons.lock_outline),
+                          hintText: 'Enter your password',
                           suffixIcon: IconButton(
-                            icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
+                            icon: Icon(_obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility),
                             onPressed: _togglePasswordVisibility,
                           ),
                           border: OutlineInputBorder(
@@ -191,9 +234,11 @@ class _SignInPageState extends State<SignInPage> {
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Sign In', style: TextStyle(fontSize: 16)),
+                            Text('Sign In',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.white)),
                             SizedBox(width: 8),
-                            Icon(Icons.arrow_forward),
+                            Icon(Icons.arrow_forward, color: Colors.white),
                           ],
                         ),
                       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/calendar_section.dart';
 import '../widgets/location_map.dart';
-// Import halaman tracker
+import '../user_data.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,18 +19,18 @@ class _HomePageState extends State<HomePage> {
     'August', 'September', 'October', 'November', 'December'
   ];
 
-// Removed _onItemTapped method to avoid Navigator.push to TrackerPage
-
   String getGreeting() {
     final hour = DateTime.now().hour;
+    final userName =
+        UserData().fullName.isNotEmpty ? UserData().fullName : 'User';
     if (hour < 12) {
-      return 'Selamat pagi, User!';
+      return 'Selamat pagi, $userName!';
     } else if (hour < 17) {
-      return 'Selamat siang, User!';
+      return 'Selamat siang, $userName!';
     } else if (hour < 20) {
-      return 'Selamat sore, User!';
+      return 'Selamat sore, $userName!';
     } else {
-      return 'Selamat malam, User!';
+      return 'Selamat malam, $userName!';
     }
   }
 

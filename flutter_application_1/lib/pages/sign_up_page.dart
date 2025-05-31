@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/services/api_service.dart';
+import '../components/loading.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -37,19 +40,35 @@ class _SignUpPageState extends State<SignUpPage> {
     });
 
     if (_formKey.currentState!.validate() && _passwordsMatch) {
-      // Perform sign up logic here
+      LoadingPopup.show(context: context, message: "Creating account...");
       final apiService = ApiService();
       final email = _emailController.text;
       final password = _passwordController.text;
       final response = await apiService.register(email, password);
       if (response.statusCode == 201) {
-        // Navigate to profile setup page
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Account created successfully')),
-        );
-        Navigator.pushReplacementNamed(context, '/profile_setup');
+        // After successful registration, login to get token
+        final loginResponse = await apiService.login(email, password);
+        if (loginResponse.statusCode == 200) {
+          final Map<String, dynamic> loginData = loginResponse.body.isNotEmpty
+              ? Map<String, dynamic>.from(jsonDecode(loginResponse.body))
+              : {};
+          final token = loginData['token'] ?? '';
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('token', token);
+          LoadingPopup.hide(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Account created successfully')),
+          );
+          Navigator.pushReplacementNamed(context, '/profile_setup');
+        } else {
+          LoadingPopup.hide(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Account created, but failed to login')),
+          );
+        }
       } else {
-        // Display error message
+        LoadingPopup.hide(context);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Error signing up')),
         );
@@ -147,6 +166,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
+                          hintText: 'Enter your password...',
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
@@ -179,6 +199,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
+                          hintText: 'Enter again your password...',
                           prefixIcon: const Icon(Icons.lock_outline),
                           suffixIcon: IconButton(
                             icon: Icon(_obscurePasswordConfirm ? Icons.visibility_off : Icons.visibility),
@@ -225,9 +246,11 @@ class _SignUpPageState extends State<SignUpPage> {
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text('Sign Up', style: TextStyle(fontSize: 16)),
+                            Text('Sign Up',
+                                style: TextStyle(
+                                    fontSize: 16, color: Colors.white)),
                             SizedBox(width: 8),
-                            Icon(Icons.arrow_forward),
+                            Icon(Icons.arrow_forward, color: Colors.white),
                           ],
                         ),
                       ),

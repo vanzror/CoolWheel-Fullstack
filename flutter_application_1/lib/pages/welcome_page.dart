@@ -45,8 +45,9 @@ class WelcomePage extends StatelessWidget {
                   // Navigate to sign up page
                   Navigator.pushNamed(context, '/sign_up');
                 },
-                icon: const Icon(Icons.arrow_forward),
-                label: const Text('Get Started'),
+                icon: const Icon(Icons.arrow_forward, color: Colors.white),
+                label: const Text('Get Started',
+                    style: TextStyle(color: Colors.white)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),

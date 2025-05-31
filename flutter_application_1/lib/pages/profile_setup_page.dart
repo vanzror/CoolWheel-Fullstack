@@ -3,6 +3,7 @@ import 'package:flutter_application_1/services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import '../user_data.dart';
+import '../components/loading.dart';
 
 class ProfileSetupPage extends StatefulWidget {
   const ProfileSetupPage({super.key});
@@ -49,6 +50,7 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
 
   void _continue() async {
     if (_formKey.currentState!.validate()) {
+      LoadingPopup.show(context: context, message: "Saving profile...");
       // Save data to UserData singleton
       final userData = UserData();
       userData.fullName = _fullNameController.text;
@@ -74,8 +76,9 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
         getToken.toString()
       );
 
+      LoadingPopup.hide(context);
       debugPrint(
-        'Response from API: ${response.statusCode} ${response.body}',
+        'Response from API: [38;5;2m${response.statusCode} ${response.body} ${getToken}[0m',
       );
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -190,8 +193,10 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: _continue,
-                  icon: const Icon(Icons.arrow_forward),
-                  label: const Text('Continue'),
+                  icon: const Icon(Icons.arrow_forward,
+                      size: 16, color: Colors.white),
+                  label: const Text('Continue',
+                      style: TextStyle(fontSize: 16, color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     padding: const EdgeInsets.symmetric(vertical: 16),
