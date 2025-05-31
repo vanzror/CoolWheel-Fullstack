@@ -9,6 +9,7 @@ class ApiService {
   static const String baseUrlCalories = '$baseUrl/calories';
   static const String baseUrlHeartRate = '$baseUrl/heartrate';
   static const String baseUrlRealTime = '$baseUrl/realtime';
+  static const String baseUrlHistory = '$baseUrl/history';
 
   Future<http.Response> login(String email, String password) {
     return http.post(
@@ -110,5 +111,46 @@ class ApiService {
         'Authorization': 'Bearer $token',
       },
     );
-  } 
+  }
+
+  Future<http.Response> getAllHistory(
+    String token,
+  ) {
+    return http.get(
+      Uri.parse(baseUrlHistory),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<http.Response> getAvailableDateHistory(
+    String token,
+  ) {
+    return http.get(
+      Uri.parse('$baseUrlHistory/dates'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<http.Response> getHistoryByDate(
+    String date,
+    String token,
+  ) {
+    final RegExp dateFormat = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+    if (!dateFormat.hasMatch(date)) {
+      throw const FormatException('Format tanggal harus yyyy-mm-dd');
+    }
+    return http.get(
+      Uri.parse('$baseUrlHistory/$date'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
 }

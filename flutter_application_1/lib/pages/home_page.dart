@@ -11,13 +11,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String selectedMonth = 'April';
-  final int _selectedIndex = 0;
+  late String selectedMonth = months[DateTime.now().month - 1];
 
   final List<String> months = [
     'January', 'February', 'March', 'April', 'May', 'June', 'July',
     'August', 'September', 'October', 'November', 'December'
   ];
+
+  final GlobalKey<CalendarSectionState> _calendarKey =
+      GlobalKey<CalendarSectionState>();
 
   String getGreeting() {
     final hour = DateTime.now().hour;
@@ -39,54 +41,66 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FC),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            _calendarKey.currentState?.refreshCalendar();
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
 
-              // Greeting section
-              Text(
-                getGreeting(),
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E2641),
-                ),
-              ),
-
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  const Text("My Activities",
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const Spacer(),
-                  DropdownButton<String>(
-                    value: selectedMonth,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedMonth = newValue!;
-                      });
-                    },
-                    items: months.map<DropdownMenuItem<String>>((String month) {
-                      return DropdownMenuItem<String>(
-                        value: month,
-                        child: Text(month),
-                      );
-                    }).toList(),
+                // Greeting section
+                Text(
+                  getGreeting(),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E2641),
                   ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              CalendarSection(selectedMonth: selectedMonth, year: 2025),
-              const SizedBox(height: 24),
-              const Text("Bike Location",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 16),
-              const LocationMap(),
-              const SizedBox(height: 100),
-            ],
+                ),
+
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    const Text("My Activities",
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    DropdownButton<String>(
+                      value: selectedMonth,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedMonth = newValue!;
+                        });
+                      },
+                      items:
+                          months.map<DropdownMenuItem<String>>((String month) {
+                        return DropdownMenuItem<String>(
+                          value: month,
+                          child: Text(month),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                CalendarSection(
+                    key: _calendarKey,
+                    selectedMonth: selectedMonth,
+                    year: 2025),
+                const SizedBox(height: 24),
+                const Text("Bike Location",
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 16),
+                const LocationMap(),
+                const SizedBox(height: 100),
+              ],
+            ),
           ),
         ),
       ),

@@ -1,85 +1,197 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import '../services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import '../widgets/calendar_dialog.dart';
 
-class MyActivitiesPage extends StatelessWidget {
+class MyActivitiesPage extends StatefulWidget {
   final DateTime selectedDate;
 
   const MyActivitiesPage({super.key, required this.selectedDate});
 
   @override
-  Widget build(BuildContext context) {
-    final dateFormatted = DateFormat('d MMMM yyyy').format(selectedDate);
+  State<MyActivitiesPage> createState() => _MyActivitiesPageState();
+}
 
+class _MyActivitiesPageState extends State<MyActivitiesPage> {
+  late Future<List<Map<String, dynamic>>> historyFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    historyFuture = fetchHistory();
+  }
+
+  Future<List<Map<String, dynamic>>> fetchHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    final api = ApiService();
+    final dateStr = DateFormat('yyyy-MM-dd').format(widget.selectedDate);
+    final response = await api.getHistoryByDate(dateStr, token);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final List history = data['history_by_date'] ?? [];
+      return List<Map<String, dynamic>>.from(history);
+    }
+    return [];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final dateFormatted = DateFormat('d MMMM yyyy').format(widget.selectedDate);
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Back Button
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new),
-                onPressed: () => Navigator.pop(context),
-              ),
-
-              const SizedBox(height: 8),
-
-              // Title and Date
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Activity History',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+          child: FutureBuilder<List<Map<String, dynamic>>>(
+            future: historyFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (snapshot.hasError) {
+                return const Center(child: Text('Error loading data'));
+              }
+              final history = snapshot.data ?? [];
+              if (history.isEmpty) {
+                return const Center(child: Text('No activity found'));
+              }
+              final main = history[0];
+              final others = history.length > 1 ? history.sublist(1) : [];
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Back Button
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back_ios_new),
+                      onPressed: () {
+                        Navigator.of(context)
+                            .pushNamedAndRemoveUntil('/main', (route) => false);
+                      },
                     ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
+
+                    const SizedBox(height: 8),
+
+                    // Title and Date
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Icon(Icons.calendar_today, size: 16),
-                        const SizedBox(width: 6),
-                        Text(
-                          dateFormatted,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        const Text(
+                          'Activity History',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () async {
+                              final picked = await showDialog<DateTime>(
+                                context: context,
+                                builder: (context) => CalendarDialog(
+                                  initialDate: widget.selectedDate,
+                                  onDateSelected: (picked) {
+                                    Navigator.of(context).pop(picked);
+                                  },
+                                ),
+                              );
+                              if (picked != null &&
+                                  picked != widget.selectedDate) {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        MyActivitiesPage(selectedDate: picked),
+                                  ),
+                                );
+                              }
+                            },
+                            child: Row(
+                              children: [
+                                const Icon(Icons.calendar_today, size: 16),
+                                const SizedBox(width: 6),
+                                Text(
+                                  dateFormatted,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
+                    const SizedBox(height: 20),
 
-              // Statistic Grid
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                physics: const NeverScrollableScrollPhysics(),
-                children: const [
-                  _StatCard(title: 'Heart', value: '80', unit: 'BPM', icon: Icons.monitor_heart),
-                  _StatCard(title: 'Distance', value: '10.5', unit: 'km', icon: Icons.directions_bike),
-                  _StatCard(title: 'Duration', value: '10 h 50', unit: 'min', icon: Icons.av_timer),
-                  _StatCard(title: 'Calories', value: '999', unit: 'kcal', icon: Icons.local_fire_department),
-                ],
-              ),
+                    // Last Activity label
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.blue,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Last Activity: ${main['started_at'] != null && main['started_at'].toString().isNotEmpty ? DateFormat('d MMM yyyy, HH:mm').format(DateTime.tryParse(main['started_at'].toString().replaceFirst('T', ' ')) ?? DateTime.now()) : '-'}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
 
-              const SizedBox(height: 24),
+                    // Statistic Grid
+                    GridView.count(
+                      crossAxisCount: 2,
+                      shrinkWrap: true,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _StatCard(
+                            title: 'Heart',
+                            value: main['highest_heartrate'].toString(),
+                            unit: 'BPM',
+                            icon: Icons.monitor_heart),
+                        _StatCard(
+                            title: 'Distance',
+                            value: main['total_distance'].toString(),
+                            unit: 'km',
+                            icon: Icons.directions_bike),
+                        _StatCard(
+                            title: 'Duration',
+                            value: main['duration_minutes'].toString(),
+                            unit: 'min',
+                            icon: Icons.av_timer),
+                        _StatCard(
+                            title: 'Calories',
+                            value: main['total_calories'].toString(),
+                            unit: 'kcal',
+                            icon: Icons.local_fire_department),
+                      ],
+                    ),
 
-              // Activity List
-              const _ActivityTile(),
-              const SizedBox(height: 12),
-              const _ActivityTile(),
-            ],
+                    const SizedBox(height: 24),
+
+                    // Activity List
+                    ...others.map((item) => _ActivityTile(item: item)).toList(),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
@@ -128,10 +240,25 @@ class _StatCard extends StatelessWidget {
 }
 
 class _ActivityTile extends StatelessWidget {
-  const _ActivityTile();
+  final Map<String, dynamic> item;
+  const _ActivityTile({required this.item});
 
   @override
   Widget build(BuildContext context) {
+    final startedAt = item['started_at'] ?? '';
+    final calories = item['total_calories'] ?? '';
+    final distance = item['total_distance'] ?? '';
+    final duration = item['duration_minutes'] ?? '';
+    final heartrate = item['highest_heartrate'] ?? '';
+    // Format date+time
+    String dateTimeStr = startedAt;
+    if (startedAt.length >= 16) {
+      // yyyy-MM-ddTHH:mm:ss or yyyy-MM-dd HH:mm:ss
+      final dt = DateTime.tryParse(startedAt.replaceFirst('T', ' '));
+      if (dt != null) {
+        dateTimeStr = DateFormat('d MMM yyyy, HH:mm').format(dt);
+      }
+    }
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -149,24 +276,36 @@ class _ActivityTile extends StatelessWidget {
             child: const Icon(Icons.directions_bike, color: Colors.white),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Biking to Keputih',
+                const Text(
+                  'Cycling',
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
+                Text(dateTimeStr, style: const TextStyle(color: Colors.grey)),
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     Icon(Icons.local_fire_department, size: 16, color: Colors.grey),
                     SizedBox(width: 4),
-                    Text('241 kkal', style: TextStyle(color: Colors.grey)),
+                    Text('$calories kkal',
+                        style: TextStyle(color: Colors.grey)),
                     SizedBox(width: 12),
-                    Icon(Icons.calendar_month, size: 16, color: Colors.grey),
+                    Icon(Icons.directions_bike, size: 16, color: Colors.grey),
                     SizedBox(width: 4),
-                    Text('3d ago', style: TextStyle(color: Colors.grey)),
+                    Text('$distance km', style: TextStyle(color: Colors.grey)),
+                    SizedBox(width: 12),
+                    Icon(Icons.av_timer, size: 16, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text('$duration min', style: TextStyle(color: Colors.grey)),
+                    SizedBox(width: 12),
+                    Icon(Icons.monitor_heart, size: 16, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text('$heartrate BPM',
+                        style: TextStyle(color: Colors.grey)),
                   ],
                 )
               ],
