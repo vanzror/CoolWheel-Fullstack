@@ -2,3 +2,4 @@
 flutter_application_1/android/settings.gradle
 flutter_application_1/android/gradle/wrapper/gradle-wrapper.properties
 node_modules/
+.vscode/settings.json

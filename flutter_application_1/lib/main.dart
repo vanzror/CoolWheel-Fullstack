@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'pages/home_page.dart';
 import 'pages/tracker_page.dart';
 import 'pages/profile_page.dart';
@@ -8,10 +8,10 @@ import 'pages/welcome_page.dart';
 import 'pages/sign_up_page.dart';
 import 'pages/sign_in_page.dart';
 import 'pages/profile_setup_page.dart';
+import 'widgets/calendar_section.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences prefs = await SharedPreferences.getInstance();
   runApp(const MyApp());
 }
 
@@ -69,13 +69,16 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
+  final GlobalKey<CalendarSectionState> _calendarKey =
+      GlobalKey<CalendarSectionState>();
+
   late final List<Widget> _pages;
 
   @override
   void initState() {
     super.initState();
     _pages = [
-      const HomePage(),
+      HomePage(calendarKey: _calendarKey),
       TrackerPage(onBackToHome: () {
         setState(() {
           _selectedIndex = 0;
@@ -88,6 +91,9 @@ class _MainPageState extends State<MainPage> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      if (index == 0) {
+        _calendarKey.currentState?.forceRefresh();
+      }
     });
   }
 

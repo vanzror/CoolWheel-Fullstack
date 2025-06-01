@@ -4,7 +4,9 @@ import '../widgets/location_map.dart';
 import '../user_data.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final GlobalKey<CalendarSectionState>? calendarKey;
+
+  const HomePage({super.key, this.calendarKey});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -12,14 +14,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late String selectedMonth = months[DateTime.now().month - 1];
+  late int selectedYear = DateTime.now().year;
 
   final List<String> months = [
     'January', 'February', 'March', 'April', 'May', 'June', 'July',
     'August', 'September', 'October', 'November', 'December'
   ];
-
-  final GlobalKey<CalendarSectionState> _calendarKey =
-      GlobalKey<CalendarSectionState>();
 
   String getGreeting() {
     final hour = DateTime.now().hour;
@@ -43,7 +43,7 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
-            _calendarKey.currentState?.refreshCalendar();
+            widget.calendarKey?.currentState?.refreshCalendar();
           },
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -52,8 +52,6 @@ class _HomePageState extends State<HomePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
-
-                // Greeting section
                 Text(
                   getGreeting(),
                   style: const TextStyle(
@@ -62,36 +60,22 @@ class _HomePageState extends State<HomePage> {
                     color: Color(0xFF1E2641),
                   ),
                 ),
-
                 const SizedBox(height: 24),
-                Row(
-                  children: [
-                    const Text("My Activities",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                    const Spacer(),
-                    DropdownButton<String>(
-                      value: selectedMonth,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          selectedMonth = newValue!;
-                        });
-                      },
-                      items:
-                          months.map<DropdownMenuItem<String>>((String month) {
-                        return DropdownMenuItem<String>(
-                          value: month,
-                          child: Text(month),
-                        );
-                      }).toList(),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
                 CalendarSection(
-                    key: _calendarKey,
-                    selectedMonth: selectedMonth,
-                    year: 2025),
+                  key: widget.calendarKey,
+                  selectedMonth: selectedMonth,
+                  year: selectedYear,
+                  onMonthChanged: (newMonth) async {
+                    setState(() {
+                      selectedMonth = newMonth;
+                    });
+                  },
+                  onYearChanged: (newYear) {
+                    setState(() {
+                      selectedYear = newYear;
+                    });
+                  },
+                ),
                 const SizedBox(height: 24),
                 const Text("Bike Location",
                     style:
@@ -107,3 +91,5 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
+
+

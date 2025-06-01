@@ -1,3 +1,4 @@
 {
-  "cmake.sourceDirectory": "D:/Kuliah/Projects/CoolWheel-Fullstack/flutter_application_1/linux"
+  "cmake.sourceDirectory": "D:/Kuliah/Projects/CoolWheel-Fullstack/flutter_application_1/linux",
+  "java.configuration.updateBuildConfiguration": "disabled"
 }

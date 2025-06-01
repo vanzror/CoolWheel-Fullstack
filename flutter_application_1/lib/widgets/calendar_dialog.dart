@@ -21,6 +21,7 @@ class _CalendarDialogState extends State<CalendarDialog> {
   late int year;
   late int month;
   late Future<Set<int>> cyclingDaysFuture;
+  late List<DateTime> availableDates = [];
 
   @override
   void initState() {
@@ -39,17 +40,17 @@ class _CalendarDialogState extends State<CalendarDialog> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final List dates = data['available_dates'] ?? [];
+      availableDates =
+          dates.map<DateTime>((dateStr) => DateTime.parse(dateStr)).toList();
       final Set<int> days = {};
-      for (final dateStr in dates) {
-        try {
-          final date = DateTime.parse(dateStr);
-          if (date.year == year && date.month == month) {
-            days.add(date.day);
-          }
-        } catch (_) {}
+      for (final date in availableDates) {
+        if (date.year == year && date.month == month) {
+          days.add(date.day);
+        }
       }
       return days;
     }
+    availableDates = [];
     return {};
   }
 
@@ -58,7 +59,7 @@ class _CalendarDialogState extends State<CalendarDialog> {
       final newDate = DateTime(year, month + delta, 1);
       year = newDate.year;
       month = newDate.month;
-      cyclingDaysFuture = fetchCyclingDays();
+      cyclingDaysFuture = fetchCyclingDays(); // Always fetch again
     });
   }
 
@@ -114,7 +115,6 @@ class _CalendarDialogState extends State<CalendarDialog> {
             FutureBuilder<Set<int>>(
               future: cyclingDaysFuture,
               builder: (context, snapshot) {
-                final cyclingDays = snapshot.data ?? {};
                 return GridView.builder(
                   shrinkWrap: true,
                   itemCount: totalCells,
@@ -133,7 +133,11 @@ class _CalendarDialogState extends State<CalendarDialog> {
                     final isToday = today.year == year &&
                         today.month == month &&
                         today.day == dayNumber;
-                    final isCyclingDay = cyclingDays.contains(dayNumber);
+                    // Only mark as cycling if availableDates contains this exact date
+                    final isCyclingDay = availableDates.any((d) =>
+                        d.year == year &&
+                        d.month == month &&
+                        d.day == dayNumber);
                     Color bgColor = Colors.white;
                     if (isToday) {
                       bgColor = Colors.black;
@@ -158,8 +162,7 @@ class _CalendarDialogState extends State<CalendarDialog> {
                           ? () {
                               final selectedDate =
                                   DateTime(year, month, dayNumber);
-                              widget.onDateSelected(selectedDate);
-                              Navigator.of(context).pop();
+                              Navigator.of(context).pop(selectedDate);
                             }
                           : null,
                       child: Container(
