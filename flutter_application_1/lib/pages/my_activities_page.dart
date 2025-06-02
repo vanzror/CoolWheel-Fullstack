@@ -97,7 +97,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
                 totalCalories +=
                     num.tryParse(item['total_calories'].toString()) ?? 0;
               }
-              final avgHeart = history.isNotEmpty
+              final highestHeart = history.isNotEmpty
                   ? history
                       .map((item) =>
                           num.tryParse(item['highest_heartrate'].toString()) ??
@@ -253,7 +253,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
                       children: [
                         _StatCard(
                             title: 'Heart',
-                            value: avgHeart.toStringAsFixed(0),
+                            value: highestHeart.toStringAsFixed(0),
                             unit: 'BPM',
                             icon: Icons.monitor_heart),
                         _StatCard(
