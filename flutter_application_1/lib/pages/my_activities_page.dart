@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/api_service.dart';
@@ -96,7 +98,11 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
                     num.tryParse(item['total_calories'].toString()) ?? 0;
               }
               final avgHeart = history.isNotEmpty
-                  ? (totalHeart / history.length).round()
+                  ? history
+                      .map((item) =>
+                          num.tryParse(item['highest_heartrate'].toString()) ??
+                          0)
+                      .reduce((a, b) => a > b ? a : b)
                   : 0;
               final sumDistance = totalDistance.toStringAsFixed(2);
               final sumDuration = totalDuration.round();
@@ -247,7 +253,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
                       children: [
                         _StatCard(
                             title: 'Heart',
-                            value: avgHeart.toString(),
+                            value: avgHeart.toStringAsFixed(0),
                             unit: 'BPM',
                             icon: Icons.monitor_heart),
                         _StatCard(
@@ -273,7 +279,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
                     // Activity List
                     ...history
                         .map((item) => _ActivityTile(item: item))
-                        .toList(),
+                        ,
                   ],
                 ),
               );
@@ -375,23 +381,28 @@ class _ActivityTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    Icon(Icons.local_fire_department, size: 16, color: Colors.grey),
-                    SizedBox(width: 4),
+                    const Icon(Icons.local_fire_department,
+                        size: 16, color: Colors.grey),
+                    const SizedBox(width: 4),
                     Text('$calories kkal',
-                        style: TextStyle(color: Colors.grey)),
-                    SizedBox(width: 12),
-                    Icon(Icons.directions_bike, size: 16, color: Colors.grey),
-                    SizedBox(width: 4),
-                    Text('$distance km', style: TextStyle(color: Colors.grey)),
-                    SizedBox(width: 12),
-                    Icon(Icons.av_timer, size: 16, color: Colors.grey),
-                    SizedBox(width: 4),
-                    Text('$duration min', style: TextStyle(color: Colors.grey)),
-                    SizedBox(width: 12),
-                    Icon(Icons.monitor_heart, size: 16, color: Colors.grey),
-                    SizedBox(width: 4),
+                        style: const TextStyle(color: Colors.grey)),
+                    const SizedBox(width: 12),
+                    const Icon(Icons.directions_bike,
+                        size: 16, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text('$distance km',
+                        style: const TextStyle(color: Colors.grey)),
+                    const SizedBox(width: 12),
+                    const Icon(Icons.av_timer, size: 16, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text('$duration min',
+                        style: const TextStyle(color: Colors.grey)),
+                    const SizedBox(width: 12),
+                    const Icon(Icons.monitor_heart,
+                        size: 16, color: Colors.grey),
+                    const SizedBox(width: 4),
                     Text('$heartrate BPM',
-                        style: TextStyle(color: Colors.grey)),
+                        style: const TextStyle(color: Colors.grey)),
                   ],
                 )
               ],
