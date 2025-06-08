@@ -10,6 +10,8 @@ class ApiService {
   static const String baseUrlHeartRate = '$baseUrl/heartrate';
   static const String baseUrlRealTime = '$baseUrl/realtime';
   static const String baseUrlHistory = '$baseUrl/history';
+  static const String baseUrlBuzzer = '$baseUrl/buzzer';
+  static const String baseUrlSummaryRides = '$baseUrl/summary';
 
   Future<http.Response> login(String email, String password) {
     return http.post(
@@ -70,6 +72,30 @@ class ApiService {
   ) {
     return http.post(
       Uri.parse('$baseUrlRides/start'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<http.Response> pauseRide(
+    String token,
+  ) {
+    return http.post(
+      Uri.parse('$baseUrlRides/pause'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<http.Response> resumeRide(
+    String token,
+  ) {
+    return http.post(
+      Uri.parse('$baseUrlRides/resume'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
@@ -147,6 +173,80 @@ class ApiService {
     }
     return http.get(
       Uri.parse('$baseUrlHistory/$date'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<http.Response> getLastGPSCoordinates(
+    String token,
+  ) {
+    return http.get(
+      Uri.parse('$baseUrlGPS/live'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<http.Response> getLiveGpsTracking(
+    String token,
+  ) {
+    return http.get(
+      Uri.parse('$baseUrlGPS/tracking/live'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<http.Response> getGpsHistoryByRideId(
+    String token,
+    String rideId,
+  ) {
+    return http.get(
+      Uri.parse('$baseUrlGPS/history/$rideId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<http.Response> playBuzzer(
+    String token,
+  ) {
+    return http.post(
+      Uri.parse(baseUrlBuzzer),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<http.Response> getHeartRateDataByRideID(
+    String rideId,
+    String token,
+  ) {
+    return http.get(
+      Uri.parse('$baseUrlHeartRate/gethr?ride_id=$rideId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  Future<http.Response> getSummaryRideAfterEnd(
+    String token,
+  ) {
+    return http.get(
+      Uri.parse(baseUrlSummaryRides),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $token',
