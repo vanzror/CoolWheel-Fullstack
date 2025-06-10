@@ -131,7 +131,7 @@ class _LocationMapState extends State<LocationMap> {
     
     // Draw outer glow/shadow circle
     final Paint shadowPaint = Paint()
-      ..color = Colors.black.withValues(alpha: 0.3)
+      ..color = Colors.black.withOpacity(0.3)
       ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 4.0);
     
     canvas.drawCircle(
@@ -192,7 +192,7 @@ class _LocationMapState extends State<LocationMap> {
     
     // Draw pulse ring animation effect
     final Paint pulsePaint = Paint()
-      ..color = const Color(0xFF4A90E2).withValues(alpha: 0.3)
+      ..color = const Color(0xFF4A90E2).withOpacity(0.3)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
     
@@ -212,7 +212,7 @@ class _LocationMapState extends State<LocationMap> {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -313,7 +313,7 @@ class _LocationMapState extends State<LocationMap> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withValues(alpha: 0.1),
+                    Colors.black.withOpacity(0.1),
                     Colors.transparent,
                   ],
                 ),
@@ -333,14 +333,14 @@ class _LocationMapState extends State<LocationMap> {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: isLoading 
-                          ? Colors.orange.withValues(alpha: 0.9)
+                          ? Colors.orange.withOpacity(0.9)
                           : hasError 
-                              ? Colors.red.withValues(alpha: 0.9)
-                              : Colors.green.withValues(alpha: 0.9),
+                              ? Colors.red.withOpacity(0.9)
+                              : Colors.green.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
+                          color: Colors.black.withOpacity(0.2),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -377,11 +377,11 @@ class _LocationMapState extends State<LocationMap> {
                   // Refresh button
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: Colors.white.withOpacity(0.9),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
+                          color: Colors.black.withOpacity(0.1),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -411,7 +411,7 @@ class _LocationMapState extends State<LocationMap> {
             if (isLoading)
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.3),
+                  color: Colors.black.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Center(
@@ -449,7 +449,7 @@ class _LocationMapState extends State<LocationMap> {
             if (hasError && !isLoading)
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.3),
+                  color: Colors.black.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Center(
@@ -520,11 +520,11 @@ class _LocationMapState extends State<LocationMap> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.95),
+                    color: Colors.white.withOpacity(0.95),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
+                        color: Colors.black.withOpacity(0.1),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -539,7 +539,7 @@ class _LocationMapState extends State<LocationMap> {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF4A90E2).withValues(alpha: 0.1),
+                              color: const Color(0xFF4A90E2).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Icon(

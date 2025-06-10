@@ -164,7 +164,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
               pinned: true,
               backgroundColor: Colors.white,
               surfaceTintColor: Colors.white,
-              shadowColor: Colors.grey.withValues(alpha: 0.1),
+              shadowColor: Colors.grey.withOpacity(0.1),
               elevation: 0.5,
               leading: IconButton(
                 icon:
@@ -204,7 +204,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withValues(alpha: 0.1),
+                            color: Colors.grey.withOpacity(0.1),
                             spreadRadius: 1,
                             blurRadius: 10,
                             offset: const Offset(0, 2),
@@ -275,7 +275,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withValues(alpha: 0.1),
+                            color: Colors.grey.withOpacity(0.1),
                             spreadRadius: 1,
                             blurRadius: 10,
                             offset: const Offset(0, 2),
@@ -332,7 +332,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 8),
                               decoration: BoxDecoration(
-                                color: Colors.blue.withValues(alpha: 0.1),
+                                color: Colors.blue.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Row(
@@ -417,7 +417,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withValues(alpha: 0.1),
+                            color: Colors.grey.withOpacity(0.1),
                             spreadRadius: 1,
                             blurRadius: 10,
                             offset: const Offset(0, 2),
@@ -646,7 +646,7 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
             ),
             belowBarData: BarAreaData(
               show: true,
-              color: Colors.red.withValues(alpha: 0.1),
+              color: Colors.red.withOpacity(0.1),
             ),
           ),
         ],
