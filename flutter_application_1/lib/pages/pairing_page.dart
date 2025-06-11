@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
 class PairingPage extends StatelessWidget {
   const PairingPage({super.key});
@@ -10,51 +12,42 @@ class PairingPage extends StatelessWidget {
       body: Center(
         child: ElevatedButton(
           onPressed: () async {
-            // Minta akses Bluetooth (contoh untuk Android/iOS, gunakan permission_handler & flutter_blue)
-            // Pastikan sudah menambah dependency permission_handler dan flutter_blue di pubspec.yaml
-            // import 'package:permission_handler/permission_handler.dart';
-            // import 'package:flutter_blue/flutter_blue.dart';
-
-            // Request permission
-            // final status = await Permission.bluetooth.request();
-            // if (status.isGranted) {
-            //   // Lakukan proses pairing di sini
-            //   // Jika pairing berhasil:
-            //   Navigator.pushReplacementNamed(context, '/main');
-            //   return;
-            // } else {
-            //   ScaffoldMessenger.of(context).showSnackBar(
-            //     const SnackBar(
-            //       content: Text('Akses Bluetooth ditolak'),
-            //       backgroundColor: Colors.red,
-            //     ),
-            //   );
-            //   return;
-            // }
-
-            // Untuk demo tanpa dependency:
-            final result = await showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Aktifkan Bluetooth'),
-                content: const Text(
-                    'Silakan nyalakan Bluetooth di perangkat Anda untuk melanjutkan proses pairing.'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: const Text('Sudah Aktif'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Batal'),
-                  ),
-                ],
-              ),
-            );
-            if (result == true) {
-              // Simulasi pairing berhasil, lanjut ke home page
-              Navigator.pushReplacementNamed(context, '/main');
+            // Minta permission Bluetooth
+            final status = await Permission.bluetooth.request();
+            if (!status.isGranted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Akses Bluetooth ditolak'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+              return;
             }
+
+            // Mulai scan device BLE
+            FlutterBluePlus.startScan(timeout: const Duration(seconds: 4));
+            // Tunggu hasil scan
+            final scanResults = await FlutterBluePlus.scanResults.first;
+            // Pilih device ESP (misal: nama mengandung 'ESP')
+            final espDevice = scanResults
+                .firstWhere(
+                  (r) => r.device.name.toLowerCase().contains('esp'),
+                  orElse: () => scanResults.first,
+                )
+                .device;
+            await FlutterBluePlus.stopScan();
+            await espDevice.connect();
+            // Discover services
+            List<BluetoothService> services =
+                await espDevice.discoverServices();
+            // Pilih service & characteristic (ganti UUID sesuai ESP Anda)
+            final service = services.first;
+            final characteristic = service.characteristics.first;
+            // Kirim data pairing (contoh: string 'PAIR')
+            await characteristic.write("PAIR".codeUnits);
+            await espDevice.disconnect();
+            // Pairing berhasil, lanjut ke home page
+            Navigator.pushReplacementNamed(context, '/main');
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF007BFF),

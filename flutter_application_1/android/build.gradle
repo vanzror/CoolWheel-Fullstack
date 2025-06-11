@@ -8,6 +8,14 @@ allprojects {
 rootProject.buildDir = "../build"
 subprojects {
     project.buildDir = "${rootProject.buildDir}/${project.name}"
+    // Tambahkan namespace untuk plugin yang membutuhkan (misal: flutter_blue)
+    afterEvaluate { project ->
+        if (project.name.contains('flutter_blue')) {
+            if (project.hasProperty('android')) {
+                project.android.namespace = "com.pauldemarco.flutter_blue"
+            }
+        }
+    }
 }
 subprojects {
     project.evaluationDependsOn(":app")
