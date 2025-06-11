@@ -23,15 +23,18 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
-  final TextEditingController _emergencyContactNameController = TextEditingController();
-  final TextEditingController _emergencyContactPhoneController = TextEditingController();
+  final TextEditingController _emergencyContactNameController =
+      TextEditingController();
+  final TextEditingController _emergencyContactPhoneController =
+      TextEditingController();
 
   Future<void> _pickImage() async {
     // Image picker functionality removed due to missing package
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    DateTime initialDate = DateTime.now().subtract(const Duration(days: 365 * 20));
+    DateTime initialDate =
+        DateTime.now().subtract(const Duration(days: 365 * 20));
     DateTime firstDate = DateTime(1900);
     DateTime lastDate = DateTime.now();
 
@@ -66,15 +69,14 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
 
       final apiService = ApiService();
       final response = await apiService.updateUser(
-        userData.fullName,
-        int.parse(userData.weight),
-        int.parse(userData.height),
-        userData.emergencyContactPhone,
-        userData.emergencyContactName,
-        int.parse(userData.age),
-        userData.phone,
-        getToken.toString()
-      );
+          userData.fullName,
+          int.parse(userData.weight),
+          int.parse(userData.height),
+          userData.emergencyContactPhone,
+          userData.emergencyContactName,
+          int.parse(userData.age),
+          userData.phone,
+          getToken.toString());
 
       LoadingPopup.hide(context);
       debugPrint(
@@ -84,8 +86,8 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Data user updated successfully')),
         );
-        Navigator.pushReplacementNamed(context, '/main');
-      // Navigate to home page
+        Navigator.pushReplacementNamed(context, '/pairing');
+        // Navigate to pairing page
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to update user data')),
@@ -137,7 +139,8 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                         radius: 48,
                         backgroundImage: _profileImage != null
                             ? FileImage(_profileImage!)
-                            : const AssetImage('assets/profile.png') as ImageProvider,
+                            : const AssetImage('assets/profile.png')
+                                as ImageProvider,
                       ),
                       Positioned(
                         bottom: 0,
@@ -162,9 +165,11 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                _buildTextField(_fullNameController, 'Nama Lengkap', Icons.person, TextInputType.text),
+                _buildTextField(_fullNameController, 'Nama Lengkap',
+                    Icons.person, TextInputType.text),
                 const SizedBox(height: 16),
-                _buildTextField(_phoneController, 'Nomor Telepon', Icons.phone_android, TextInputType.phone),
+                _buildTextField(_phoneController, 'Nomor Telepon',
+                    Icons.phone_android, TextInputType.phone),
                 const SizedBox(height: 16),
                 // TextFormField(
                 //   controller: _dobController,
@@ -181,15 +186,20 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                 //   onTap: () => _selectDate(context),
                 //   validator: (value) => value == null || value.isEmpty ? 'Please select tanggal lahir' : null,
                 // ),
-                _buildTextField(_ageController, 'Usia', Icons.cake, TextInputType.number),
+                _buildTextField(
+                    _ageController, 'Usia', Icons.cake, TextInputType.number),
                 const SizedBox(height: 16),
-                _buildTextField(_weightController, 'Berat Badan', Icons.monitor_weight, TextInputType.number),
+                _buildTextField(_weightController, 'Berat Badan',
+                    Icons.monitor_weight, TextInputType.number),
                 const SizedBox(height: 16),
-                _buildTextField(_heightController, 'Tinggi Badan', Icons.height, TextInputType.number),
+                _buildTextField(_heightController, 'Tinggi Badan', Icons.height,
+                    TextInputType.number),
                 const SizedBox(height: 16),
-                _buildTextField(_emergencyContactNameController, 'Nama Kontak Darurat', Icons.person, TextInputType.text),
+                _buildTextField(_emergencyContactNameController,
+                    'Nama Kontak Darurat', Icons.person, TextInputType.text),
                 const SizedBox(height: 16),
-                _buildTextField(_emergencyContactPhoneController, 'Nomor Telepon Darurat', Icons.phone, TextInputType.phone),
+                _buildTextField(_emergencyContactPhoneController,
+                    'Nomor Telepon Darurat', Icons.phone, TextInputType.phone),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: _continue,
@@ -200,7 +210,8 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ],
@@ -211,7 +222,8 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, IconData icon, TextInputType keyboardType) {
+  Widget _buildTextField(TextEditingController controller, String label,
+      IconData icon, TextInputType keyboardType) {
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
@@ -224,7 +236,8 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
         ),
       ),
       keyboardType: keyboardType,
-      validator: (value) => value == null || value.isEmpty ? 'Please enter $label' : null,
+      validator: (value) =>
+          value == null || value.isEmpty ? 'Please enter $label' : null,
     );
   }
 }

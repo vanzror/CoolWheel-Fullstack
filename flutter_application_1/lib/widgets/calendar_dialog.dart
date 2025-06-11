@@ -149,7 +149,7 @@ class _CalendarDialogState extends State<CalendarDialog> {
                       boxDecoration = BoxDecoration(
                         color: Colors.black,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.blue, width: 3),
+                        border: Border.all(color: const Color(0xFF2196F3), width: 3),
                       );
                     } else {
                       boxDecoration = BoxDecoration(

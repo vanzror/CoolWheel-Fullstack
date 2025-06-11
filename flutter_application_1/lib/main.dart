@@ -11,6 +11,7 @@ import 'pages/welcome_page.dart';
 import 'pages/sign_up_page.dart';
 import 'pages/sign_in_page.dart';
 import 'pages/profile_setup_page.dart';
+import 'pages/pairing_page.dart';
 import 'widgets/calendar_section.dart';
 
 void main() async {
@@ -56,6 +57,7 @@ class MyApp extends StatelessWidget {
         '/sign_up': (context) => const SignUpPage(),
         '/sign_in': (context) => const SignInPage(),
         '/profile_setup': (context) => const ProfileSetupPage(),
+        '/pairing': (context) => const PairingPage(),
         '/main': (context) => const MainPage(),
       },
     );
