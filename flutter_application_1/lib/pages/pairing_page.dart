@@ -66,7 +66,7 @@ class PairingPage extends StatelessWidget {
             textStyle:
                 const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          child: const Text('Pair'),
+          child: const Text('Pair with CoolWheel Bike'),
         ),
       ),
     );
