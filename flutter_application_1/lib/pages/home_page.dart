@@ -5,6 +5,8 @@ import 'package:iconify_flutter/icons/icon_park_twotone.dart';
 import '../widgets/calendar_section.dart';
 import '../widgets/location_map.dart';
 import '../user_data.dart';
+import '../services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   final GlobalKey<CalendarSectionState>? calendarKey;
@@ -120,8 +122,48 @@ class _HomePageState extends State<HomePage> {
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: () {
-                            // TODO: Add alarm functionality
+                          onPressed: () async {
+                            // Play buzzer via API
+                            final prefs = await SharedPreferences.getInstance();
+                            final token = prefs.getString('token') ?? '';
+                            if (token.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Token tidak ditemukan'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+                            final apiService = ApiService();
+                            try {
+                              final response =
+                                  await apiService.playBuzzer(token);
+                              if (response.statusCode == 200) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                        Text('Buzzer berhasil dijalankan!'),
+                                    backgroundColor: Colors.blue,
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        'Gagal menjalankan buzzer: \\n${response.body}'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error: $e'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF242E49),
