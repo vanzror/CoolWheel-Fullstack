@@ -31,7 +31,8 @@ class PairingPage extends StatelessWidget {
         await FlutterBluetoothSerial.instance.getBondedDevices();
     BluetoothDevice? espDevice;
     for (var device in bondedDevices) {
-      if (device.name != null && device.name!.toLowerCase().contains('COOLWHEEL')) {
+      if (device.name != null &&
+          device.name!.toLowerCase().contains('COOLWHEEL')) {
         espDevice = device;
         break;
       }
