@@ -3,8 +3,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
+import 'package:location/location.dart' as loc;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import '../services/api_service.dart';
 
@@ -20,8 +21,8 @@ class TrackerPage extends StatefulWidget {
 class _TrackerPageState extends State<TrackerPage>
     with AutomaticKeepAliveClientMixin {
   GoogleMapController? _mapController;
-  LocationData? _currentLocation;
-  final Location _location = Location();
+  loc.LocationData? _currentLocation;
+  final loc.Location _location = loc.Location();
 
   Timer? _timer;
   Timer? _gpsTimer;
@@ -38,9 +39,9 @@ class _TrackerPageState extends State<TrackerPage>
   String? _realtimeError;
 
   // GPS tracking variables
-  List<LatLng> _routePoints = [];
-  Set<Polyline> _polylines = {};
-  Set<Marker> _markers = {};
+  final List<LatLng> _routePoints = [];
+  final Set<Polyline> _polylines = {};
+  final Set<Marker> _markers = {};
   int? _currentRideId;
 
   // Tambahkan variabel untuk animasi blink timer
@@ -52,6 +53,7 @@ class _TrackerPageState extends State<TrackerPage>
   @override
   void initState() {
     super.initState();
+    _requestBluetoothPermission();
     _getLocation();
     // Set initial stat values
     _distanceKm = 0.0;
@@ -60,15 +62,25 @@ class _TrackerPageState extends State<TrackerPage>
     _pace = 0.0;
   }
 
+  Future<void> _requestBluetoothPermission() async {
+    var status = await Permission.bluetooth.status;
+    if (!status.isGranted) {
+      status = await Permission.bluetooth.request();
+      if (!status.isGranted) {
+        print("Bluetooth permission denied.");
+      }
+    }
+  }
+
   Future<void> _getLocation() async {
     final hasPermission = await _location.requestPermission();
-    if (hasPermission == PermissionStatus.granted) {
-      final loc = await _location.getLocation();
+    if (hasPermission == loc.PermissionStatus.granted) {
+      final locationData = await _location.getLocation();
       if (_currentLocation == null ||
-          _currentLocation!.latitude != loc.latitude ||
-          _currentLocation!.longitude != loc.longitude) {
+          _currentLocation!.latitude != locationData.latitude ||
+          _currentLocation!.longitude != locationData.longitude) {
         setState(() {
-          _currentLocation = loc;
+          _currentLocation = locationData;
         });
       }
     } else {
@@ -677,7 +689,7 @@ class _TrackerPageState extends State<TrackerPage>
         points: _routePoints,
         color: Colors.blue,
         width: 4,
-        patterns: [],
+        patterns: const [],
       ),
     );
   }
@@ -862,9 +874,7 @@ class _TrackerPageState extends State<TrackerPage>
                   polylines: _polylines,
                   markers: _markers,
                   onMapCreated: (controller) {
-                    if (_mapController == null) {
-                      _mapController = controller;
-                    }
+                    _mapController ??= controller;
                   },
                 ),
                 SafeArea(
