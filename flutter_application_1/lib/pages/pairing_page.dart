@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-import 'dart:typed_data';
+import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:typed_data';
 
 class PairingPage extends StatelessWidget {
   const PairingPage({super.key});
@@ -20,64 +20,54 @@ class PairingPage extends StatelessWidget {
       return;
     }
 
-    // Aktifkan Bluetooth jika belum aktif
-    final isEnabled = await FlutterBluetoothSerial.instance.isEnabled;
-    if (!isEnabled!) {
-      await FlutterBluetoothSerial.instance.requestEnable();
-    }
-
-    // Scan device, pilih yang namanya mengandung 'ESP'
-    List<BluetoothDevice> bondedDevices =
-        await FlutterBluetoothSerial.instance.getBondedDevices();
-    BluetoothDevice? espDevice;
-    for (var device in bondedDevices) {
-      if (device.name != null &&
-          device.name!.toLowerCase().contains('COOLWHEEL')) {
-        espDevice = device;
-        break;
-      }
-    }
-    if (espDevice == null) {
+    // Pastikan Bluetooth aktif
+    final isOn = await FlutterBluePlus.isOn;
+    if (!isOn) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-              'Device ESP tidak ditemukan. Pastikan sudah dipairing di pengaturan Bluetooth.'),
+              'Bluetooth belum aktif. Aktifkan Bluetooth terlebih dahulu.'),
           backgroundColor: Colors.orange,
         ),
       );
       return;
     }
 
-    // Coba koneksi ke ESP
-    try {
-      // Ambil token dari SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token') ?? '';
-      if (token.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Token tidak ditemukan'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-      BluetoothConnection connection =
-          await BluetoothConnection.toAddress(espDevice.address);
-      // Kirim token ke ESP
-      connection.output.add(Uint8List.fromList(token.codeUnits));
-      await connection.output.allSent;
-      await connection.close();
-      // Pairing berhasil, lanjut ke home page
-      Navigator.pushReplacementNamed(context, '/main');
-    } catch (e) {
+    // Mulai scan device BLE
+    FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
+    final scanResults = await FlutterBluePlus.scanResults.first;
+    // Pilih device ESP (misal: nama mengandung 'COOLWHEEL')
+    final espDevice = scanResults
+        .firstWhere(
+          (r) => r.device.name.toLowerCase().contains('coolwheel'),
+          orElse: () => scanResults.first,
+        )
+        .device;
+    await FlutterBluePlus.stopScan();
+    await espDevice.connect();
+    // Discover services
+    List<BluetoothService> services = await espDevice.discoverServices();
+    // Pilih service & characteristic (ganti UUID sesuai ESP Anda)
+    final service = services.first;
+    final characteristic = service.characteristics.first;
+    // Ambil token dari SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    if (token.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Gagal pairing/koneksi ke ESP: $e'),
+        const SnackBar(
+          content: Text('Token tidak ditemukan'),
           backgroundColor: Colors.red,
         ),
       );
+      await espDevice.disconnect();
+      return;
     }
+    // Kirim token ke ESP
+    await characteristic.write(Uint8List.fromList(token.codeUnits));
+    await espDevice.disconnect();
+    // Pairing berhasil, lanjut ke home page
+    Navigator.pushReplacementNamed(context, '/main');
   }
 
   @override
