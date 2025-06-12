@@ -15,6 +15,11 @@ subprojects {
                 project.android.namespace = "com.pauldemarco.flutter_blue"
             }
         }
+        if (project.name.contains('flutter_bluetooth_serial')) {
+            if (project.hasProperty('android')) {
+                project.android.namespace = "io.github.edufolly.flutterbluetoothserial"
+            }
+        }
     }
 }
 subprojects {
