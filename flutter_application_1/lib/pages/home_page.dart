@@ -220,7 +220,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   Row(
                     children: [
-                      Iconify(
+                      const Iconify(
                         MaterialSymbols.calendar_today,
                         color: Colors.white,
                         size: 20,

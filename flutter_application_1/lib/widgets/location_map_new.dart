@@ -135,7 +135,7 @@ class _LocationMapState extends State<LocationMap> {
       ..maskFilter = const ui.MaskFilter.blur(ui.BlurStyle.normal, 4.0);
     
     canvas.drawCircle(
-      Offset(centerX + 2, centerY + 2),
+      const Offset(centerX + 2, centerY + 2),
       22.0,
       shadowPaint,
     );
@@ -143,8 +143,8 @@ class _LocationMapState extends State<LocationMap> {
     // Draw gradient background circle
     final Paint gradientPaint = Paint()
       ..shader = ui.Gradient.linear(
-        Offset(centerX, centerY - 20),
-        Offset(centerX, centerY + 20),
+        const Offset(centerX, centerY - 20),
+        const Offset(centerX, centerY + 20),
         [
           const Color(0xFF4A90E2), // Light blue
           const Color(0xFF2E7BD6), // Darker blue
@@ -152,21 +152,21 @@ class _LocationMapState extends State<LocationMap> {
       )
       ..style = PaintingStyle.fill;
     
-    canvas.drawCircle(Offset(centerX, centerY), 20.0, gradientPaint);
+    canvas.drawCircle(const Offset(centerX, centerY), 20.0, gradientPaint);
     
     // Draw inner white circle
     final Paint innerPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
     
-    canvas.drawCircle(Offset(centerX, centerY), 16.0, innerPaint);
+    canvas.drawCircle(const Offset(centerX, centerY), 16.0, innerPaint);
     
     // Draw bike icon circle background
     final Paint iconBgPaint = Paint()
       ..color = const Color(0xFF4A90E2)
       ..style = PaintingStyle.fill;
     
-    canvas.drawCircle(Offset(centerX, centerY), 14.0, iconBgPaint);
+    canvas.drawCircle(const Offset(centerX, centerY), 14.0, iconBgPaint);
     
     // Draw bike emoji
     final textPainter = TextPainter(
@@ -196,7 +196,7 @@ class _LocationMapState extends State<LocationMap> {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 3.0;
     
-    canvas.drawCircle(Offset(centerX, centerY), 25.0, pulsePaint);
+    canvas.drawCircle(const Offset(centerX, centerY), 25.0, pulsePaint);
     
     final ui.Picture picture = pictureRecorder.endRecording();
     final ui.Image image = await picture.toImage(size.toInt(), size.toInt());

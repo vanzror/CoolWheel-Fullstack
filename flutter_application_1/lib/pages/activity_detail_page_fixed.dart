@@ -91,15 +91,15 @@ class _ActivityDetailPageState extends State<ActivityDetailPage> {
               icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
               onPressed: () => Navigator.of(context).pop(),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
+            flexibleSpace: const FlexibleSpaceBar(
+              title: Text(
                 'Activity Details',
                 style: TextStyle(
                   color: Colors.black87,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              titlePadding: const EdgeInsets.only(left: 50, bottom: 16),
+              titlePadding: EdgeInsets.only(left: 50, bottom: 16),
               expandedTitleScale: 1.5,
             ),
           ),

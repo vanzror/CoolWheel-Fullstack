@@ -123,7 +123,7 @@ class _LocationMapState extends State<LocationMap> {
 
     // Create teardrop/pin shape
     pinPath.addOval(Rect.fromCircle(
-      center: Offset(pinCenterX, pinCenterY),
+      center: const Offset(pinCenterX, pinCenterY),
       radius: pinRadius,
     ));
 
@@ -159,35 +159,35 @@ class _LocationMapState extends State<LocationMap> {
 
     // Bike wheels
     canvas.drawCircle(
-      Offset(offsetX - 7 * bikeScale, offsetY + 3),
+      const Offset(offsetX - 7 * bikeScale, offsetY + 3),
       3.5 * bikeScale,
       bikePaint,
     );
     canvas.drawCircle(
-      Offset(offsetX + 7 * bikeScale, offsetY + 3),
+      const Offset(offsetX + 7 * bikeScale, offsetY + 3),
       3.5 * bikeScale,
       bikePaint,
     );
 
     // Bike frame
     canvas.drawLine(
-      Offset(offsetX - 3 * bikeScale, offsetY + 3),
-      Offset(offsetX + 3 * bikeScale, offsetY + 3),
+      const Offset(offsetX - 3 * bikeScale, offsetY + 3),
+      const Offset(offsetX + 3 * bikeScale, offsetY + 3),
       bikePaint,
     );
     canvas.drawLine(
-      Offset(offsetX, offsetY + 3),
-      Offset(offsetX, offsetY - 5 * bikeScale),
+      const Offset(offsetX, offsetY + 3),
+      const Offset(offsetX, offsetY - 5 * bikeScale),
       bikePaint,
     );
     canvas.drawLine(
-      Offset(offsetX, offsetY - 5 * bikeScale),
-      Offset(offsetX - 5 * bikeScale, offsetY),
+      const Offset(offsetX, offsetY - 5 * bikeScale),
+      const Offset(offsetX - 5 * bikeScale, offsetY),
       bikePaint,
     );
     canvas.drawLine(
-      Offset(offsetX, offsetY - 5 * bikeScale),
-      Offset(offsetX + 5 * bikeScale, offsetY),
+      const Offset(offsetX, offsetY - 5 * bikeScale),
+      const Offset(offsetX + 5 * bikeScale, offsetY),
       bikePaint,
     );
 

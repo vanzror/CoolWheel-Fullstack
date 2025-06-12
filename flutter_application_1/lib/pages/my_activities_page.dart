@@ -163,7 +163,7 @@ class _MyActivitiesPageState extends State<MyActivitiesPage> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Color(0xFF242E49),
+                color: const Color(0xFF242E49),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: InkWell(

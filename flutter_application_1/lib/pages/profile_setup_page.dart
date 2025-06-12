@@ -80,7 +80,7 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
 
       LoadingPopup.hide(context);
       debugPrint(
-        'Response from API: [38;5;2m${response.statusCode} ${response.body} ${getToken}[0m',
+        'Response from API: [38;5;2m${response.statusCode} ${response.body} $getToken[0m',
       );
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(

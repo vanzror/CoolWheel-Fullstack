@@ -59,7 +59,7 @@ class CalendarSectionState extends State<CalendarSection> {
     if (token.isEmpty) return {};
     final api = ApiService();
     final response = await api.getAvailableDateHistory(token);
-    print('API response: ' + response.body);
+    print('API response: ${response.body}');
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final List dates = data['available_dates'] ?? [];
@@ -538,7 +538,7 @@ class _MonthYearPickerDialogState extends State<_MonthYearPickerDialog> {
   @override
   Widget build(BuildContext context) {
     final currentYear = DateTime.now().year;
-    final minYear = 2000;
+    const minYear = 2000;
     final maxYear = currentYear + 10;
 
     final years =
