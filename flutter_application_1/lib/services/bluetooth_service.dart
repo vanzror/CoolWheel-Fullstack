@@ -19,12 +19,10 @@ class BluetoothService {
   BluetoothDevice? get connectedDevice => _connectedDevice;
 
   Future<bool> requestBluetoothPermissions() async {
-    
     Map<Permission, PermissionStatus> statuses = await [
       Permission.bluetooth,
       Permission.bluetoothScan,
       Permission.bluetoothConnect,
-      Permission.location,
     ].request();
 
     return statuses.values.every((status) => status.isGranted);
@@ -38,7 +36,6 @@ class BluetoothService {
         return false;
       }
 
-      
       bool? isEnabled = await FlutterBluetoothSerial.instance.isEnabled;
       if (isEnabled != true) {
         await FlutterBluetoothSerial.instance.requestEnable();

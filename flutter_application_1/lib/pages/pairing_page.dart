@@ -19,6 +19,7 @@ class _PairingPageState extends State<PairingPage> {
   BluetoothDevice? selectedDevice;
   bool isConnecting = false;
   bool isScanning = false;
+  bool pairingSuccess = false;
   StreamSubscription<List<BluetoothDevice>>? scanSubscription;
 
   @override
@@ -83,7 +84,11 @@ class _PairingPageState extends State<PairingPage> {
       // Listen to scan results
       scanSubscription = bluetoothService.scanForDevices().listen((devices) {
         setState(() {
-          devicesList = devices;
+          // Filter hanya device dengan nama mengandung 'COOLWHEEL'
+          devicesList = devices
+              .where((d) =>
+                  d.name != null && d.name!.toUpperCase().contains('COOLWHEEL'))
+              .toList();
         });
       });
 
@@ -96,7 +101,6 @@ class _PairingPageState extends State<PairingPage> {
           bluetoothService.stopScan();
         }
       });
-
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -139,6 +143,30 @@ class _PairingPageState extends State<PairingPage> {
                 ? selectedDevice!.name!
                 : 'Unknown Device');
 
+        // Kirim token ke ESP32 setelah benar-benar terkoneksi
+        final token = prefs.getString('token') ?? '';
+        final formattedToken = 'TOKEN:$token\n';
+        print('[DEBUG] Token yang akan dikirim ke ESP32: $formattedToken');
+        if (token.isNotEmpty) {
+          final sent = await bluetoothService.sendData(formattedToken);
+          if (sent && mounted) {
+            setState(() {
+              pairingSuccess = true;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('Token berhasil dikirim ke ESP32'),
+                  backgroundColor: Colors.green),
+            );
+          } else if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                  content: Text('Gagal mengirim token ke ESP32'),
+                  backgroundColor: Colors.red),
+            );
+          }
+        }
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -147,9 +175,6 @@ class _PairingPageState extends State<PairingPage> {
               backgroundColor: Colors.green,
             ),
           );
-          
-          // Navigate back or to next screen
-          Navigator.pop(context, true);
         }
       } else {
         if (mounted) {
@@ -164,8 +189,7 @@ class _PairingPageState extends State<PairingPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -175,6 +199,10 @@ class _PairingPageState extends State<PairingPage> {
         });
       }
     }
+  }
+
+  void _goToHome() {
+    Navigator.pushReplacementNamed(context, '/main');
   }
 
   @override
@@ -287,14 +315,17 @@ class _PairingPageState extends State<PairingPage> {
                     },
                   ),
           ),
-          
-          // Connect button
+
+          // Connect/Continue button
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16.0),
             child: ElevatedButton(
-              onPressed:
-                  selectedDevice != null && !isConnecting ? _pairWithESP : null,
+              onPressed: isConnecting
+                  ? null
+                  : pairingSuccess
+                      ? _goToHome
+                      : (selectedDevice != null ? _pairWithESP : null),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 backgroundColor: Colors.blue,
@@ -318,9 +349,9 @@ class _PairingPageState extends State<PairingPage> {
                         Text('Connecting...'),
                       ],
                     )
-                  : const Text(
-                      'Connect to Device',
-                      style: TextStyle(fontSize: 16),
+                  : Text(
+                      pairingSuccess ? 'Continue' : 'Pair',
+                      style: const TextStyle(fontSize: 16),
                     ),
             ),
           ),

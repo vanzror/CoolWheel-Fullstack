@@ -127,10 +127,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       padding: const EdgeInsets.all(16),
                       child: Row(
                         children: [
-                          const CircleAvatar(
-                            radius: 28,
-                            backgroundImage: AssetImage('assets/profile.png'),
-                          ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
@@ -166,12 +162,8 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
                     buildSettingTile(Icons.person, "Personal Info"),
-                    buildSettingTile(Icons.settings, "Preferences"),
                     const SizedBox(height: 20),
-                    const Text("Help & Support",
-                        style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
-                    buildSettingTile(Icons.help_outline, "About"),
                     const SizedBox(height: 20),
                     const Text("Sign Out",
                         style: TextStyle(fontWeight: FontWeight.bold)),

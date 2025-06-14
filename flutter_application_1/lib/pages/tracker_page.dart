@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as loc;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:permission_handler/permission_handler.dart';
+//import 'package:permission_handler/permission_handler.dart';
 
 import '../services/api_service.dart';
 
@@ -22,12 +22,11 @@ class _TrackerPageState extends State<TrackerPage>
     with AutomaticKeepAliveClientMixin {
   GoogleMapController? _mapController;
   loc.LocationData? _currentLocation;
-  final loc.Location _location = loc.Location();
 
   Timer? _timer;
   Timer? _gpsTimer;
   int _elapsedSeconds = 0;
-  
+
   // Ride state: 'stopped', 'running', 'paused'
   String _rideState = 'stopped';
 
@@ -53,40 +52,12 @@ class _TrackerPageState extends State<TrackerPage>
   @override
   void initState() {
     super.initState();
-    _requestBluetoothPermission();
-    _getLocation();
+    _startBlinkTimer();
     // Set initial stat values
     _distanceKm = 0.0;
     _calories = 0;
     _bpm = 0;
     _pace = 0.0;
-  }
-
-  Future<void> _requestBluetoothPermission() async {
-    var status = await Permission.bluetooth.status;
-    if (!status.isGranted) {
-      status = await Permission.bluetooth.request();
-      if (!status.isGranted) {
-        print("Bluetooth permission denied.");
-      }
-    }
-  }
-
-  Future<void> _getLocation() async {
-    final hasPermission = await _location.requestPermission();
-    if (hasPermission == loc.PermissionStatus.granted) {
-      final locationData = await _location.getLocation();
-      if (_currentLocation == null ||
-          _currentLocation!.latitude != locationData.latitude ||
-          _currentLocation!.longitude != locationData.longitude) {
-        setState(() {
-          _currentLocation = locationData;
-        });
-      }
-    } else {
-      // Handle permission denial
-      print("Location permission denied.");
-    }
   }
 
   Future<String?> _getToken() async {
@@ -232,6 +203,7 @@ class _TrackerPageState extends State<TrackerPage>
       _showTimer = true;
     });
   }
+
   void _startTimer() async {
     if (_rideState != 'stopped') return;
     // Reset timer dan stat jika user klik start lagi
@@ -339,10 +311,10 @@ class _TrackerPageState extends State<TrackerPage>
     _timer?.cancel();
     _gpsTimer?.cancel();
     await endRide();
-    
+
     // Show summary dialog after successful end ride
     await _showRideSummaryDialog();
-    
+
     setState(() {
       _rideState = 'stopped';
       _elapsedSeconds = 0;
@@ -364,6 +336,7 @@ class _TrackerPageState extends State<TrackerPage>
     final seconds = (_elapsedSeconds % 60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
   }
+
   Future<void> _getLiveGpsTracking() async {
     final token = await _getToken();
     if (token == null) return;
@@ -391,11 +364,21 @@ class _TrackerPageState extends State<TrackerPage>
 
             _routePoints.addAll(tempPoints);
 
-            // Debug: Print GPS points order
-            print('GPS Points count: ${_routePoints.length}');
+            // Setel _currentLocation dari GPS backend
             if (_routePoints.isNotEmpty) {
-              print('First GPS point (should be START): ${_routePoints.first}');
-              print('Last GPS point (should be CURRENT): ${_routePoints.last}');
+              _currentLocation = loc.LocationData.fromMap({
+                'latitude': _routePoints.last.latitude,
+                'longitude': _routePoints.last.longitude,
+              });
+            }
+
+            // Debug: Print GPS points order
+            print('GPS Points count: \\${_routePoints.length}');
+            if (_routePoints.isNotEmpty) {
+              print(
+                  'First GPS point (should be START): \\${_routePoints.first}');
+              print(
+                  'Last GPS point (should be CURRENT): \\${_routePoints.last}');
             } // Update polylines to show the route
             _updateRoutePolylines();
 
@@ -732,6 +715,7 @@ class _TrackerPageState extends State<TrackerPage>
     _mapController?.dispose();
     super.dispose();
   }
+
   Widget _buildControlButtons() {
     switch (_rideState) {
       case 'stopped':
@@ -879,7 +863,8 @@ class _TrackerPageState extends State<TrackerPage>
                 ),
                 SafeArea(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -906,7 +891,8 @@ class _TrackerPageState extends State<TrackerPage>
                                 ),
                               ),
                             ),
-                            const SizedBox(width: 48), // To balance the back button width
+                            const SizedBox(
+                                width: 48), // To balance the back button width
                           ],
                         ),
                         const SizedBox(height: 10),
