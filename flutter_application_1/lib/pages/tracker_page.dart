@@ -6,7 +6,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart' as loc;
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 import '../services/api_service.dart';
 
 class TrackerPage extends StatefulWidget {
@@ -58,6 +57,12 @@ class _TrackerPageState extends State<TrackerPage>
     _calories = 0;
     _bpm = 0;
     _pace = 0.0;
+    // Set lokasi awal ke titik default (misal: Monas Jakarta)
+    _currentLocation = loc.LocationData.fromMap({
+      'latitude': -6.175392,
+      'longitude': 106.827153,
+    });
+    // Tidak perlu ambil GPS backend saat init
   }
 
   Future<String?> _getToken() async {

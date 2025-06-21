@@ -121,6 +121,7 @@ class _MainPageState extends State<MainPage> {
             ),
           ],
         ),
+        
         child: ClipRRect(
           borderRadius: BorderRadius.circular(50),
           child: BottomNavigationBar(

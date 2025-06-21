@@ -2,7 +2,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  static const String baseUrl = 'https://coolwheel-production.up.railway.app/api';
+  static const String baseUrl =
+      'https://coolwheel-production.up.railway.app/api';
   static const String baseUrlUsers = '$baseUrl/users';
   static const String baseUrlGPS = '$baseUrl/gps';
   static const String baseUrlRides = '$baseUrl/rides';
@@ -47,13 +48,13 @@ class ApiService {
     String namaSos,
     int age,
     String phoneNumber,
-    String token, 
+    String token,
   ) {
     return http.put(
       Uri.parse('$baseUrlUsers/me'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token', 
+        'Authorization': 'Bearer $token',
       },
       body: jsonEncode({
         'username': username,
@@ -252,5 +253,23 @@ class ApiService {
         'Authorization': 'Bearer $token',
       },
     );
+  }
+
+  /// Mendapatkan status buzzer (nyala/mati) dari backend
+  Future<bool> getBuzzerState(String token) async {
+    final response = await http.get(
+      Uri.parse(baseUrlBuzzer),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      // Asumsikan respons: { "buzzer_on": true/false }
+      return data['buzzer_on'] == true;
+    } else {
+      throw Exception('Gagal mengambil status buzzer');
+    }
   }
 }

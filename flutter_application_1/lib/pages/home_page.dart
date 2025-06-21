@@ -21,6 +21,9 @@ class _HomePageState extends State<HomePage> {
   late String selectedMonth = months[DateTime.now().month - 1];
   late int selectedYear = DateTime.now().year;
 
+  bool _isBuzzerOn = false;
+  bool _isLoadingBuzzer = false;
+
   final List<String> months = [
     'January',
     'February',
@@ -77,6 +80,82 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    _fetchBuzzerState();
+  }
+
+  Future<void> _fetchBuzzerState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    if (token.isEmpty) return;
+    try {
+      final apiService = ApiService();
+      final state = await apiService.getBuzzerState(token);
+      setState(() {
+        _isBuzzerOn = state;
+      });
+    } catch (e) {
+      // Optionally show error
+    }
+  }
+
+  Future<void> _toggleBuzzer() async {
+    setState(() {
+      _isLoadingBuzzer = true;
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    if (token.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Token tidak ditemukan'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      setState(() {
+        _isLoadingBuzzer = false;
+      });
+      return;
+    }
+    final apiService = ApiService();
+    try {
+      final response = await apiService.playBuzzer(token);
+      if (response.statusCode == 200) {
+        setState(() {
+          _isBuzzerOn = !_isBuzzerOn;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_isBuzzerOn
+                ? 'Buzzer berhasil dinyalakan!'
+                : 'Buzzer berhasil dimatikan!'),
+            backgroundColor: Colors.blue,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal menjalankan buzzer: \n${response.body}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoadingBuzzer = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F9FC),
@@ -122,51 +201,122 @@ class _HomePageState extends State<HomePage> {
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: () async {
-                            // Play buzzer via API
-                            final prefs = await SharedPreferences.getInstance();
-                            final token = prefs.getString('token') ?? '';
-                            if (token.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Token tidak ditemukan'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                              return;
-                            }
-                            final apiService = ApiService();
-                            try {
-                              final response =
-                                  await apiService.playBuzzer(token);
-                              if (response.statusCode == 200) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text('Buzzer berhasil dijalankan!'),
-                                    backgroundColor: Colors.blue,
-                                  ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Gagal menjalankan buzzer: \\n${response.body}'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Error: $e'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          },
+                          onPressed: _isLoadingBuzzer
+                              ? null
+                              : () async {
+                                  setState(() {
+                                    _isLoadingBuzzer = true;
+                                  });
+                                  final prefs =
+                                      await SharedPreferences.getInstance();
+                                  final token = prefs.getString('token') ?? '';
+                                  if (token.isEmpty) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Token tidak ditemukan'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                    setState(() {
+                                      _isLoadingBuzzer = false;
+                                    });
+                                    return;
+                                  }
+                                  final apiService = ApiService();
+                                  try {
+                                    final response =
+                                        await apiService.playBuzzer(token);
+                                    if (response.statusCode == 200) {
+                                      setState(() {
+                                        _isBuzzerOn = !_isBuzzerOn;
+                                      });
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(_isBuzzerOn
+                                              ? 'Buzzer berhasil dinyalakan!'
+                                              : 'Buzzer berhasil dimatikan!'),
+                                          backgroundColor: Colors.blue,
+                                        ),
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              'Gagal menjalankan buzzer: \n${response.body}'),
+                                          backgroundColor: Colors.red,
+                                        ),
+                                      );
+                                    }
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Error: $e'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  } finally {
+                                    setState(() {
+                                      _isLoadingBuzzer = false;
+                                    });
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF242E49),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: _isLoadingBuzzer
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Iconify(
+                                      IconParkTwotone.alarm,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _isBuzzerOn
+                                          ? 'Turn off buzzer'
+                                          : 'Turn on buzzer',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // TODO: Implementasi aksi parking di sini
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Parking button pressed!'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
                             foregroundColor: Colors.white,
                             elevation: 0,
                             shape: RoundedRectangleBorder(
@@ -176,14 +326,11 @@ class _HomePageState extends State<HomePage> {
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Iconify(
-                                IconParkTwotone.alarm,
-                                color: Colors.white,
-                                size: 20,
-                              ),
+                              Icon(Icons.local_parking,
+                                  color: Colors.white, size: 22),
                               SizedBox(width: 8),
                               Text(
-                                'Play Buzzer',
+                                'Parking',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
