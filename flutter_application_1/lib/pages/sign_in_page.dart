@@ -253,15 +253,6 @@ class _SignInPageState extends State<SignInPage> {
                           Expanded(child: Divider(color: Colors.grey.shade400)),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          _socialButton(Icons.facebook),
-                          _socialButton(Icons.g_mobiledata),
-                          _socialButton(Icons.camera_alt_outlined),
-                        ],
-                      ),
                       const SizedBox(height: 24),
                       Center(
                         child: GestureDetector(
