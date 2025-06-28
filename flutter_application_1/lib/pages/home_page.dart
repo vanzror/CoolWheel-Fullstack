@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
+import 'dart:io';
+import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/material_symbols.dart';
@@ -10,6 +12,53 @@ import '../user_data.dart';
 import '../services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+
+// Handler polling background (top-level)
+class AntiTheftTaskHandler extends TaskHandler {
+  @override
+  Future<void> onStart(DateTime timestamp, SendPort? sendPort) async {}
+
+  @override
+  Future<void> onRepeatEvent(DateTime timestamp, SendPort? sendPort) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('token') ?? '';
+    if (token.isEmpty) return;
+    try {
+      final response = await ApiService().checkAntiTheft(token);
+      Map<String, dynamic> data = {};
+      try {
+        data = jsonDecode(response.body);
+      } catch (_) {}
+      double? distance;
+      if (data['distance'] != null) {
+        if (data['distance'] is num) {
+          distance = (data['distance'] as num).toDouble();
+        } else {
+          distance = double.tryParse(data['distance']);
+        }
+      }
+      if (distance != null && distance > 50) {
+        AwesomeNotifications().createNotification(
+          content: NotificationContent(
+            id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+            channelKey: 'anti_theft_channel',
+            title: 'Peringatan!',
+            body: 'Sepeda berpindah lebih dari 50 meter!',
+            notificationLayout: NotificationLayout.Default,
+          ),
+        );
+      }
+    } catch (_) {}
+  }
+
+  @override
+  Future<void> onDestroy(DateTime timestamp, SendPort? sendPort) async {}
+}
+
+void antiTheftStartCallback() {
+  FlutterForegroundTask.setTaskHandler(AntiTheftTaskHandler());
+}
 
 class HomePage extends StatefulWidget {
   final GlobalKey<CalendarSectionState>? calendarKey;
@@ -99,11 +148,46 @@ class _HomePageState extends State<HomePage> {
           defaultColor: const Color(0xFF242E49),
           importance: NotificationImportance.High,
           channelShowBadge: true,
+          soundSource:
+              'resource://raw/peringatan_sepeda_berpindah', // Tambahkan suara custom
         ),
       ],
       debug: true,
     );
     _requestNotificationPermission();
+    _requestIgnoreBatteryOptimizations(); // Tambahkan permintaan izin background
+    FlutterForegroundTask.init(
+      androidNotificationOptions: AndroidNotificationOptions(
+        channelId: 'anti_theft_channel',
+        channelName: 'Anti Theft Notifications',
+        channelDescription: 'Notifikasi anti-maling CoolWheel',
+        channelImportance: NotificationChannelImportance.HIGH,
+        priority: NotificationPriority.HIGH,
+        iconData: const NotificationIconData(
+          resType: ResourceType.mipmap,
+          resPrefix: ResourcePrefix.ic,
+          name: 'launcher',
+        ),
+      ),
+      iosNotificationOptions: const IOSNotificationOptions(),
+      foregroundTaskOptions: const ForegroundTaskOptions(
+        interval: 5000,
+        isOnceEvent: false,
+        autoRunOnBoot: false,
+        allowWakeLock: true,
+        allowWifiLock: true,
+      ),
+    );
+  }
+
+  void _requestIgnoreBatteryOptimizations() async {
+    if (Platform.isAndroid) {
+      final isIgnoring =
+          await FlutterForegroundTask.isIgnoringBatteryOptimizations;
+      if (!isIgnoring) {
+        await FlutterForegroundTask.openIgnoreBatteryOptimizationSettings();
+      }
+    }
   }
 
   void _requestNotificationPermission() async {
@@ -216,8 +300,7 @@ class _HomePageState extends State<HomePage> {
           Map<String, dynamic> antiTheftData;
           if (antiTheftResponse.body is Map<String, dynamic>) {
             antiTheftData = antiTheftResponse.body as Map<String, dynamic>;
-          } else if (antiTheftResponse.body is String &&
-              antiTheftResponse.body.isNotEmpty) {
+          } else if (antiTheftResponse.body.isNotEmpty) {
             antiTheftData = jsonDecode(antiTheftResponse.body);
           } else {
             antiTheftData = {};
@@ -226,7 +309,7 @@ class _HomePageState extends State<HomePage> {
           if (antiTheftData['distance'] != null) {
             if (antiTheftData['distance'] is num) {
               distance = (antiTheftData['distance'] as num).toDouble();
-            } else if (antiTheftData['distance'] is String) {
+            } else {
               distance = double.tryParse(antiTheftData['distance']);
             }
           }
@@ -249,6 +332,20 @@ class _HomePageState extends State<HomePage> {
   void _stopAntiTheftPolling() {
     _antiTheftTimer?.cancel();
     _antiTheftTimer = null;
+  }
+
+  void _startAntiTheftForegroundTask(String token) async {
+    if (!Platform.isAndroid) return;
+    await FlutterForegroundTask.startService(
+      notificationTitle: 'Anti-Theft Aktif',
+      notificationText: 'Monitoring sepeda berjalan di background',
+      callback: antiTheftStartCallback,
+    );
+  }
+
+  Future<void> _stopAntiTheftForegroundTask() async {
+    if (!Platform.isAndroid) return;
+    await FlutterForegroundTask.stopService();
   }
 
   @override
@@ -424,6 +521,8 @@ class _HomePageState extends State<HomePage> {
                                     await apiService.toggleParking(token);
                                 if (response.statusCode == 201) {
                                   _startAntiTheftPolling(token);
+                                  _startAntiTheftForegroundTask(
+                                      token); // Panggil tanpa await karena fungsi void
                                   // Panggil checkAntiTheft hanya jika parkir berhasil diaktifkan
                                   final antiTheftResponse =
                                       await apiService.checkAntiTheft(token);
@@ -435,8 +534,7 @@ class _HomePageState extends State<HomePage> {
                                         antiTheftData = antiTheftResponse.body
                                             as Map<String, dynamic>;
                                       } else if (antiTheftResponse.body
-                                              is String &&
-                                          antiTheftResponse.body.isNotEmpty) {
+                                          is String) {
                                         antiTheftData =
                                             jsonDecode(antiTheftResponse.body);
                                       } else {
@@ -448,8 +546,7 @@ class _HomePageState extends State<HomePage> {
                                           distance =
                                               (antiTheftData['distance'] as num)
                                                   .toDouble();
-                                        } else if (antiTheftData['distance']
-                                            is String) {
+                                        } else {
                                           distance = double.tryParse(
                                               antiTheftData['distance']);
                                         }
@@ -519,6 +616,7 @@ class _HomePageState extends State<HomePage> {
                               }
                             } else {
                               _stopAntiTheftPolling();
+                              _stopAntiTheftForegroundTask(); // Panggil tanpa await karena fungsi void
                               ScaffoldMessenger.of(context).clearSnackBars();
                               await Future.delayed(
                                   const Duration(milliseconds: 100));
