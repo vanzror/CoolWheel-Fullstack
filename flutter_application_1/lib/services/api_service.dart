@@ -13,6 +13,7 @@ class ApiService {
   static const String baseUrlHistory = '$baseUrl/history';
   static const String baseUrlBuzzer = '$baseUrl/buzzer';
   static const String baseUrlSummaryRides = '$baseUrl/summary';
+  static const String baseUrlParking = '$baseUrl/parking';
 
   Future<http.Response> login(String email, String password) {
     return http.post(
@@ -271,5 +272,27 @@ class ApiService {
     } else {
       throw Exception('Gagal mengambil status buzzer');
     }
+  }
+
+  /// Toggle parking state (POST /api/parking/toggle)
+  Future<http.Response> toggleParking(String token) {
+    return http.post(
+      Uri.parse('$baseUrlParking/toggle'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+  }
+
+  /// Cek anti maling (POST /api/tracking)
+  Future<http.Response> checkAntiTheft(String token) {
+    return http.post(
+      Uri.parse('$baseUrlParking/theft'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
   }
 }

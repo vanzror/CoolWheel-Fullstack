@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:iconify_flutter/iconify_flutter.dart';
 import 'package:iconify_flutter/icons/material_symbols.dart';
@@ -23,6 +25,9 @@ class _HomePageState extends State<HomePage> {
 
   bool _isBuzzerOn = false;
   bool _isLoadingBuzzer = false;
+  bool _isParking = false;
+
+  Timer? _antiTheftTimer;
 
   final List<String> months = [
     'January',
@@ -153,6 +158,54 @@ class _HomePageState extends State<HomePage> {
         _isLoadingBuzzer = false;
       });
     }
+  }
+
+  void _startAntiTheftPolling(String token) {
+    _antiTheftTimer?.cancel();
+    _antiTheftTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      try {
+        if (!_isParking) return; // Cek status parkir sebelum polling
+        final apiService = ApiService();
+        final antiTheftResponse = await apiService.checkAntiTheft(token);
+        if (!_isParking) return; // Cek ulang setelah await jika status berubah
+        if (antiTheftResponse.statusCode == 200) {
+          Map<String, dynamic> antiTheftData;
+          if (antiTheftResponse.body is Map<String, dynamic>) {
+            antiTheftData = antiTheftResponse.body as Map<String, dynamic>;
+          } else if (antiTheftResponse.body is String &&
+              antiTheftResponse.body.isNotEmpty) {
+            antiTheftData = jsonDecode(antiTheftResponse.body);
+          } else {
+            antiTheftData = {};
+          }
+          double? distance;
+          if (antiTheftData['distance'] != null) {
+            if (antiTheftData['distance'] is num) {
+              distance = (antiTheftData['distance'] as num).toDouble();
+            } else if (antiTheftData['distance'] is String) {
+              distance = double.tryParse(antiTheftData['distance']);
+            }
+          }
+          if (_isParking && distance != null && distance > 50) {
+            Future.delayed(Duration(milliseconds: 300), () {
+              if (_isParking) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('sepeda berpindah'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            });
+          }
+        }
+      } catch (_) {}
+    });
+  }
+
+  void _stopAntiTheftPolling() {
+    _antiTheftTimer?.cancel();
+    _antiTheftTimer = null;
   }
 
   @override
@@ -301,37 +354,197 @@ class _HomePageState extends State<HomePage> {
                                 ),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       SizedBox(
                         width: double.infinity,
                         height: 50,
                         child: ElevatedButton(
-                          onPressed: () {
-                            // TODO: Implementasi aksi parking di sini
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Parking button pressed!'),
-                                backgroundColor: Colors.orange,
-                              ),
-                            );
+                          onPressed: () async {
+                            final prefs = await SharedPreferences.getInstance();
+                            final token = prefs.getString('token') ?? '';
+                            if (token.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Token tidak ditemukan'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+                            setState(() {
+                              _isParking = !_isParking;
+                            });
+                            if (_isParking) {
+                              try {
+                                final apiService = ApiService();
+                                final response =
+                                    await apiService.toggleParking(token);
+                                if (response.statusCode == 201) {
+                                  _startAntiTheftPolling(token);
+                                  // Panggil checkAntiTheft hanya jika parkir berhasil diaktifkan
+                                  final antiTheftResponse =
+                                      await apiService.checkAntiTheft(token);
+                                  if (antiTheftResponse.statusCode == 200) {
+                                    try {
+                                      Map<String, dynamic> antiTheftData;
+                                      if (antiTheftResponse.body
+                                          is Map<String, dynamic>) {
+                                        antiTheftData = antiTheftResponse.body
+                                            as Map<String, dynamic>;
+                                      } else if (antiTheftResponse.body
+                                              is String &&
+                                          antiTheftResponse.body.isNotEmpty) {
+                                        antiTheftData =
+                                            jsonDecode(antiTheftResponse.body);
+                                      } else {
+                                        antiTheftData = {};
+                                      }
+                                      double? distance;
+                                      if (antiTheftData['distance'] != null) {
+                                        if (antiTheftData['distance'] is num) {
+                                          distance =
+                                              (antiTheftData['distance'] as num)
+                                                  .toDouble();
+                                        } else if (antiTheftData['distance']
+                                            is String) {
+                                          distance = double.tryParse(
+                                              antiTheftData['distance']);
+                                        }
+                                      }
+                                      if (distance != null && distance > 50) {
+                                        Future.delayed(
+                                            Duration(milliseconds: 300), () {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            const SnackBar(
+                                              content: Text('sepeda berpindah'),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        });
+                                      } else {
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                                'Parkir & Anti-Theft aktif!'),
+                                            backgroundColor: Colors.blueGrey,
+                                          ),
+                                        );
+                                      }
+                                    } catch (_) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                              'Parkir & Anti-Theft aktif!'),
+                                          backgroundColor: Colors.blueGrey,
+                                        ),
+                                      );
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Parkir aktif, tapi gagal cek anti-theft: \n${antiTheftResponse.body}'),
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Gagal mengaktifkan parkir: \n${response.body}'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  setState(() {
+                                    _isParking = false;
+                                  });
+                                }
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                setState(() {
+                                  _isParking = false;
+                                });
+                              }
+                            } else {
+                              _stopAntiTheftPolling();
+                              ScaffoldMessenger.of(context).clearSnackBars();
+                              await Future.delayed(
+                                  const Duration(milliseconds: 100));
+                              try {
+                                final apiService = ApiService();
+                                final response =
+                                    await apiService.toggleParking(token);
+                                if (response.statusCode == 200) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Parkir dinonaktifkan!'),
+                                      backgroundColor: Colors.blueGrey,
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                          'Gagal menonaktifkan parkir: \n${response.body}'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                  setState(() {
+                                    _isParking = true;
+                                  });
+                                }
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error: $e'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                                setState(() {
+                                  _isParking = true;
+                                });
+                              }
+                            }
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            foregroundColor: Colors.white,
+                            backgroundColor: _isParking
+                                ? const Color(0xFF242E49)
+                                : Colors.white,
+                            foregroundColor: _isParking
+                                ? Colors.white
+                                : const Color(0xFF242E49),
                             elevation: 0,
+                            side: const BorderSide(
+                                color: Color(0xFF242E49), width: 1.5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.local_parking,
-                                  color: Colors.white, size: 22),
-                              SizedBox(width: 8),
+                              Iconify(
+                                MaterialSymbols.local_parking,
+                                color: _isParking
+                                    ? Colors.white
+                                    : const Color(0xFF242E49),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
                               Text(
-                                'Parking',
-                                style: TextStyle(
+                                _isParking
+                                    ? 'Nonaktifkan Parkir'
+                                    : 'Aktifkan Parkir',
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                 ),

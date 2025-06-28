@@ -115,9 +115,11 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF1E2641),
         elevation: 0,
-        title: const Text('Profile Setup'),
+        title: const Text('Profile Setup',
+            style:
+                TextStyle(color: Colors.white)), // Ubah warna teks jadi putih
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.pushReplacementNamed(context, '/sign_up'),
         ),
       ),
@@ -132,38 +134,6 @@ class _ProfileSetupPageState extends State<ProfileSetupPage> {
             key: _formKey,
             child: ListView(
               children: [
-                Center(
-                  child: Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 48,
-                        backgroundImage: _profileImage != null
-                            ? FileImage(_profileImage!)
-                            : const AssetImage('assets/profile.png')
-                                as ImageProvider,
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: GestureDetector(
-                          onTap: _pickImage,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            padding: const EdgeInsets.all(6),
-                            child: const Icon(
-                              Icons.edit,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
                 const SizedBox(height: 24),
                 _buildTextField(_fullNameController, 'Nama Lengkap',
                     Icons.person, TextInputType.text),

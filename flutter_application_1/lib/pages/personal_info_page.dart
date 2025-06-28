@@ -18,8 +18,10 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
-  final TextEditingController _emergencyContactNameController = TextEditingController();
-  final TextEditingController _emergencyContactPhoneController = TextEditingController();
+  final TextEditingController _emergencyContactNameController =
+      TextEditingController();
+  final TextEditingController _emergencyContactPhoneController =
+      TextEditingController();
 
   bool _isLoading = true;
   bool _isSaving = false;
@@ -93,7 +95,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
             width: 18,
             height: 18,
             child: CircularProgressIndicator(
-              color: Color(0xFF007BFF),
+              color: Color(0xFF1E2641),
               strokeWidth: 2,
             ),
           ),
@@ -172,7 +174,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF007BFF),
+        backgroundColor: const Color(0xFF1E2641),
         iconTheme: const IconThemeData(color: Colors.white),
         title: const Text(
           'Personal Info',
@@ -185,7 +187,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(color: Color(0xFF007BFF)),
+                  CircularProgressIndicator(color: Color(0xFF1E2641)),
                   SizedBox(height: 16),
                   Text(
                     "Loading personal info...",
@@ -215,15 +217,15 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 2),
+                                      color: Color(0xFF1E2641), width: 2),
                                 ),
                                 isDense: true,
                                 contentPadding: EdgeInsets.symmetric(
@@ -253,15 +255,15 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 2),
+                                      color: Color(0xFF1E2641), width: 2),
                                 ),
                                 isDense: true,
                                 contentPadding: EdgeInsets.symmetric(
@@ -291,15 +293,15 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 2),
+                                      color: Color(0xFF1E2641), width: 2),
                                 ),
                                 isDense: true,
                                 contentPadding: EdgeInsets.symmetric(
@@ -336,15 +338,15 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 2),
+                                      color: Color(0xFF1E2641), width: 2),
                                 ),
                                 isDense: true,
                                 contentPadding: EdgeInsets.symmetric(
@@ -375,15 +377,15 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 2),
+                                      color: Color(0xFF1E2641), width: 2),
                                 ),
                                 isDense: true,
                                 contentPadding: EdgeInsets.symmetric(
@@ -414,15 +416,15 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 2),
+                                      color: Color(0xFF1E2641), width: 2),
                                 ),
                                 isDense: true,
                                 contentPadding: EdgeInsets.symmetric(
@@ -452,15 +454,15 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 enabledBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 1),
+                                      color: Color(0xFF1E2641), width: 1),
                                 ),
                                 focusedBorder: OutlineInputBorder(
                                   borderSide: BorderSide(
-                                      color: Color(0xFF007BFF), width: 2),
+                                      color: Color(0xFF1E2641), width: 2),
                                 ),
                                 isDense: true,
                                 contentPadding: EdgeInsets.symmetric(
@@ -480,7 +482,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                     ElevatedButton(
                       onPressed: _isSaving ? null : _saveForm,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF007BFF),
+                        backgroundColor: const Color(0xFF1E2641),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),

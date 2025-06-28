@@ -110,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> {
           padding: const EdgeInsets.all(20),
           child: _isLoading
               ? const Center(
-                  child: CircularProgressIndicator(color: Color(0xFF007BFF)),
+                  child: CircularProgressIndicator(color: Color(0xFF242E49)),
                 )
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +121,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     const SizedBox(height: 20),
                     Container(
                       decoration: BoxDecoration(
-                        color: const Color(0xFF007BFF),
+                        color: const Color(0xFF242E49),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       padding: const EdgeInsets.all(16),
