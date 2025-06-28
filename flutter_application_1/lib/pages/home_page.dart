@@ -9,6 +9,7 @@ import '../widgets/location_map.dart';
 import '../user_data.dart';
 import '../services/api_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:awesome_notifications/awesome_notifications.dart';
 
 class HomePage extends StatefulWidget {
   final GlobalKey<CalendarSectionState>? calendarKey;
@@ -88,6 +89,49 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _fetchBuzzerState();
+    AwesomeNotifications().initialize(
+      null,
+      [
+        NotificationChannel(
+          channelKey: 'anti_theft_channel',
+          channelName: 'Anti Theft Notifications',
+          channelDescription: 'Notifikasi anti-maling CoolWheel',
+          defaultColor: const Color(0xFF242E49),
+          importance: NotificationImportance.High,
+          channelShowBadge: true,
+        ),
+      ],
+      debug: true,
+    );
+    _requestNotificationPermission();
+  }
+
+  void _requestNotificationPermission() async {
+    bool isAllowed = await AwesomeNotifications().isNotificationAllowed();
+    if (!isAllowed && mounted) {
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Izinkan Notifikasi'),
+          content: const Text(
+              'Aplikasi membutuhkan izin notifikasi untuk fitur anti-maling.'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Tidak'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await AwesomeNotifications()
+                    .requestPermissionToSendNotifications();
+              },
+              child: const Text('Izinkan'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Future<void> _fetchBuzzerState() async {
@@ -162,12 +206,12 @@ class _HomePageState extends State<HomePage> {
 
   void _startAntiTheftPolling(String token) {
     _antiTheftTimer?.cancel();
-    _antiTheftTimer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+    _antiTheftTimer = Timer.periodic(const Duration(seconds: 5), (timer) async {
       try {
-        if (!_isParking) return; // Cek status parkir sebelum polling
+        if (!_isParking) return;
         final apiService = ApiService();
         final antiTheftResponse = await apiService.checkAntiTheft(token);
-        if (!_isParking) return; // Cek ulang setelah await jika status berubah
+        if (!_isParking) return;
         if (antiTheftResponse.statusCode == 200) {
           Map<String, dynamic> antiTheftData;
           if (antiTheftResponse.body is Map<String, dynamic>) {
@@ -187,16 +231,15 @@ class _HomePageState extends State<HomePage> {
             }
           }
           if (_isParking && distance != null && distance > 50) {
-            Future.delayed(Duration(milliseconds: 300), () {
-              if (_isParking) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('sepeda berpindah'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              }
-            });
+            AwesomeNotifications().createNotification(
+              content: NotificationContent(
+                id: DateTime.now().millisecondsSinceEpoch.remainder(100000),
+                channelKey: 'anti_theft_channel',
+                title: 'Peringatan!',
+                body: 'Sepeda berpindah lebih dari 50 meter!',
+                notificationLayout: NotificationLayout.Default,
+              ),
+            );
           }
         }
       } catch (_) {}
