@@ -255,8 +255,10 @@ class _HomePageState extends State<HomePage> {
     try {
       final response = await apiService.playBuzzer(token);
       if (response.statusCode == 200) {
+        // Ambil status buzzer terbaru dari backend
+        final state = await apiService.getBuzzerState(token);
         setState(() {
-          _isBuzzerOn = !_isBuzzerOn;
+          _isBuzzerOn = state;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
